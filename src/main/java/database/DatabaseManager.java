@@ -7,6 +7,9 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
+// TODO: Review documentation
+// TODO: Implement a shared DatabaseManager instance along with a public static synchronized getInstance() method
+
 /**
  * Manages all interactions with the horizon_database SQLite database. Responsible for building the database
  * and performing CRUD operations on both the accounts and transactions tables. Converts SQL rows into Account

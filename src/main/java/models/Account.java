@@ -1,5 +1,7 @@
 package models;
 
+// TODO: Review documentation for this class
+
 /**
  * Class representing Accounts, holding only account info and no transaction data. Used by Main and DatabaseManager
  * in order to communicate data between the client and the database. DatabaseManager converts SQL data stored in the

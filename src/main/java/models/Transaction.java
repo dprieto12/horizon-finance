@@ -2,6 +2,8 @@ package models;
 
 import java.time.LocalDate;
 
+// TODO: Review documentation for this class
+
 /**
  * Represents a single transaction associated with an account. Used by Main and DatabaseManager to communicate
  * transaction data between the client and the database. Category is only applicable to "purchase" transactions
