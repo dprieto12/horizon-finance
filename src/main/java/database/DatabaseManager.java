@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 // TODO: Review documentation
-// TODO: Implement a shared DatabaseManager instance along with a public static synchronized getInstance() method
 
 /**
  * Manages all interactions with the horizon_database SQLite database. Responsible for building the database
@@ -18,12 +17,26 @@ import java.util.ArrayList;
 public class DatabaseManager {
     private static String databaseUrl;
 
+    private static DatabaseManager instance;
+
     /**
      * Upon instantiation, sets the databaseUrl and constructs the database.
      */
-    public DatabaseManager() {
+    private DatabaseManager() {
         databaseUrl = "jdbc:sqlite:horizon_database.db";
         buildDatabase();
+    }
+
+    /**
+     * Returns the singleton DatabaseManager instance, which is a private static field held by the class. If the
+     * instance does not exist, it is created.
+     * @return DatabaseManager instance
+     */
+    public static synchronized DatabaseManager getInstance() {
+        if (instance == null) {
+            instance = new DatabaseManager();
+        }
+        return instance;
     }
 
     // -------------------------------------------------------------------------
