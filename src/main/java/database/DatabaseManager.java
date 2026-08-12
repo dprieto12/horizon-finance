@@ -23,7 +23,8 @@ public class DatabaseManager {
      * Upon instantiation, sets the databaseUrl and constructs the database.
      */
     private DatabaseManager() {
-        databaseUrl = "jdbc:sqlite:horizon_database.db";
+        String projectRoot = System.getProperty("user.dir");
+        databaseUrl = "jdbc:sqlite:" + projectRoot + "/horizon_database.db";
         buildDatabase();
     }
 
