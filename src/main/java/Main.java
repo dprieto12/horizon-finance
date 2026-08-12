@@ -22,6 +22,6 @@ public class Main extends Application {
 
         // Set stage instance and load the initial scene
         SceneManager.setStage(stage);
-        SceneManager.switchScene("chooseAccount.fxml");
+        SceneManager.switchScene("/fxml/chooseAccount.fxml");
     }
 }

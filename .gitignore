@@ -3,6 +3,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 .kotlin
+horizon_database.db
 
 ### IntelliJ IDEA ###
 .idea/
