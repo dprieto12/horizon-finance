@@ -1,9 +1,12 @@
 package controllers;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import utils.TextFieldFilters;
 import utils.SceneManager;
+import database.DatabaseManager;
 
 import java.io.IOException;
 
@@ -13,10 +16,6 @@ import java.io.IOException;
  */
 
 // TODO: Stylize
-
-// TODO: Implement reception of text field data & creation of an account when the create button is clicked
-// TODO: Implement a character / length limiter for the text fields
-// TODO: Implement validation for the text fields & show message when not all fields are filled
 
 public class CreateAccountController {
     @FXML
@@ -34,11 +33,16 @@ public class CreateAccountController {
     @FXML
     private TextField centTextField;
 
-    private final TextField[] textFields = {firstNameTextField, lastNameTextField, accountNameTextField,
-            dollarTextField, centTextField};
+    @FXML
+    private Label errorMessageLabel;
+
+    private TextField[] textFields;
 
     @FXML
     public void initialize() {
+        textFields = new TextField[]{firstNameTextField, lastNameTextField, accountNameTextField,
+            dollarTextField, centTextField};
+
         // Set text field limiters
         firstNameTextField.setTextFormatter(TextFieldFilters.createLengthLimitFormatter(50));
         lastNameTextField.setTextFormatter(TextFieldFilters.createLengthLimitFormatter(50));
@@ -47,10 +51,27 @@ public class CreateAccountController {
         centTextField.setTextFormatter(TextFieldFilters.createNumberLimitFormatter(2));
     }
 
-    public void createNewAccount() throws IOException {
+    public void createNewAccount(ActionEvent event) throws IOException {
+        if (fieldsAreFilled()) {
+            String firstName = firstNameTextField.getText().trim();
+            String lastName = lastNameTextField.getText().trim();
+            String accountName = accountNameTextField.getText().trim();
+            int dollar = Integer.parseInt(dollarTextField.getText().trim());
+            int cent = Integer.parseInt(centTextField.getText().trim());
+            double balance = dollar + (cent / 100.0);
+            DatabaseManager.getInstance().createNewAccount(accountName, firstName, lastName, balance);
+            SceneManager.switchScene("/fxml/chooseAccount.fxml");
+        } else {
+            errorMessageLabel.setVisible(true);
+        }
     }
 
     private boolean fieldsAreFilled() {
-
+        for (TextField t : textFields) {
+            if (t.getText().trim().isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 }

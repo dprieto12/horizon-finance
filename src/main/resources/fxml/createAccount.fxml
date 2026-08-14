@@ -25,5 +25,6 @@
       <Label layoutX="293.0" layoutY="260.0" text="\$" />
       <TextField fx:id="centTextField" layoutX="367.0" layoutY="256.0" prefHeight="25.0" prefWidth="37.0" promptText="45" />
       <Label layoutX="362.0" layoutY="265.0" text="." />
+      <Label fx:id="errorMessageLabel" layoutX="233.0" layoutY="351.0" text="Some fields are not filled." textFill="RED" visible="false" />
    </children>
 </AnchorPane>
