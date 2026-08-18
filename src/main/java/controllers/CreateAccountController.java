@@ -16,6 +16,7 @@ import java.io.IOException;
  */
 
 // TODO: Stylize
+// TODO: Document
 
 public class CreateAccountController {
     @FXML
