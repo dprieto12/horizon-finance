@@ -36,6 +36,11 @@ public class DashboardController {
         accountBalanceLabel.setText(customBalance);
     }
 
+    public void navigateToAccounts() throws IOException {
+        SceneManager.switchScene("/fxml/chooseAccount.fxml");
+        ApplicationState.setCurrentAccount(null);
+    }
+
     public void viewTransactions() throws IOException {
         SceneManager.switchScene("/fxml/transactionOptions.fxml");
     }

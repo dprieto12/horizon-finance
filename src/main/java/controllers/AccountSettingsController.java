@@ -1,17 +1,13 @@
 package controllers;
 
 import database.DatabaseManager;
-import javafx.application.Application;
+import javafx.scene.control.*;
 import models.Account;
 import utils.ApplicationState;
 import utils.SceneManager;
 import utils.TextFieldUtils;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.TextField;
-import javafx.scene.control.Label;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 import javafx.event.ActionEvent;
 
 import java.io.IOException;
@@ -25,6 +21,9 @@ public class AccountSettingsController {
 
     @FXML
     private Label fieldsMissingLabel;
+
+    @FXML
+    private Button goBackButton;
 
     @FXML
     private TextField accountNameTextField;
@@ -64,7 +63,11 @@ public class AccountSettingsController {
         lastNameTextField.setTextFormatter(TextFieldUtils.createLengthLimitFormatter(50));
     }
 
-    public void updateAccount(ActionEvent event) throws IOException {
+    public void goBack() throws IOException {
+        SceneManager.switchScene("/fxml/dashboard.fxml");
+    }
+
+    public void updateAccount() throws IOException {
         // Check to make sure all fields are filled
         if (TextFieldUtils.fieldsAreFilled(textFields)) {
             // Grab the currently selected account
@@ -86,7 +89,7 @@ public class AccountSettingsController {
         }
     }
 
-    public void deleteAccount(ActionEvent event) throws IOException {
+    public void deleteAccount() throws IOException {
         // Create an alert for the user when they want to delete their account
         Alert accountDeletionAlert = new Alert(Alert.AlertType.WARNING);
         accountDeletionAlert.setTitle("Delete Account");

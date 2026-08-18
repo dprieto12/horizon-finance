@@ -6,7 +6,6 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AccountSettingsController">
    <children>
       <Label layoutX="228.0" layoutY="26.0" text="Your Account">
@@ -38,5 +37,6 @@
       <Button fx:id="updateAccountButton" layoutX="249.0" layoutY="268.0" mnemonicParsing="false" onAction="#updateAccount" text="Update Account" />
       <Button fx:id="deleteAccountButton" layoutX="251.0" layoutY="360.0" mnemonicParsing="false" onAction="#deleteAccount" text="Delete Account" textFill="#c93838" />
       <Label fx:id="fieldsMissingLabel" layoutX="236.0" layoutY="302.0" text="Some fields are missing." textFill="RED" visible="false" />
+      <Button fx:id="goBackButton" layoutX="20.0" layoutY="20.0" mnemonicParsing="false" onAction="#goBack" prefHeight="35.0" prefWidth="97.0" text="&lt;  Dashboard" />
    </children>
 </AnchorPane>

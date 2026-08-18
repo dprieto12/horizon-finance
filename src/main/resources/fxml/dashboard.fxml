@@ -21,5 +21,6 @@
       <Button fx:id="transactionsButton" layoutX="92.0" layoutY="171.0" mnemonicParsing="false" onAction="#viewTransactions" prefHeight="206.0" prefWidth="173.0" text="Transactions" />
       <Button fx:id="analyticsButton" layoutX="331.0" layoutY="171.0" mnemonicParsing="false" onAction="#viewAnalytics" prefHeight="112.0" prefWidth="185.0" text="Analytics" />
       <Button fx:id="accountButton" layoutX="328.0" layoutY="315.0" mnemonicParsing="false" onAction="#viewAccount" prefHeight="59.0" prefWidth="192.0" text="Account" />
+      <Button layoutX="19.0" layoutY="18.0" mnemonicParsing="false" onAction="#navigateToAccounts" text="&lt; Back to Accounts" />
    </children>
 </AnchorPane>
