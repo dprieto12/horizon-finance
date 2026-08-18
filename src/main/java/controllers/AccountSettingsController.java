@@ -8,7 +8,6 @@ import utils.SceneManager;
 import utils.TextFieldUtils;
 
 import javafx.fxml.FXML;
-import javafx.event.ActionEvent;
 
 import java.io.IOException;
 
@@ -21,9 +20,6 @@ public class AccountSettingsController {
 
     @FXML
     private Label fieldsMissingLabel;
-
-    @FXML
-    private Button goBackButton;
 
     @FXML
     private TextField accountNameTextField;

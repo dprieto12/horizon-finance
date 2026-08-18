@@ -20,18 +20,23 @@ public class Transaction {
     // Expense types — subtract from balance
     public static final String TYPE_PURCHASE = "purchase";
     public static final String TYPE_TRANSFER = "transfer";
-    public static final String TYPE_DONATION = "donation";
+    public static final String TYPE_WITHDRAWAL = "withdrawal";
+    public static final String TYPE_BILL = "bill";
+    public static final String TYPE_FEE = "fee";
 
     // Income types — add to balance
     public static final String TYPE_WAGES = "wages";
     public static final String TYPE_SALE = "sale";
     public static final String TYPE_GIFT = "gift";
+    public static final String TYPE_REFUND = "refund";
+    public static final String TYPE_INTEREST = "interest";
 
-    public static final String[] expenseTypes = {TYPE_PURCHASE, TYPE_TRANSFER, TYPE_DONATION};
-    public static final String[] incomeTypes = {TYPE_WAGES, TYPE_SALE, TYPE_GIFT};
+    public static final String[] expenseTypes = {TYPE_PURCHASE, TYPE_TRANSFER, TYPE_WITHDRAWAL, TYPE_BILL, TYPE_FEE};
+    public static final String[] incomeTypes = {TYPE_WAGES, TYPE_SALE, TYPE_GIFT, TYPE_REFUND, TYPE_INTEREST};
 
     // Purchase categories — only used when type is "purchase"
-    public static final String[] purchaseCategories = {"Food", "Groceries", "Personal", "School", "Entertainment", "Other"};
+    public static final String[] purchaseCategories = {"Food & Groceries", "Personal", "School", "Entertainment",
+            "Transportation", "Healthcare", "Housing", "Other"};
 
     /**
      * Full constructor — used when reading a transaction back from the database, where all fields including

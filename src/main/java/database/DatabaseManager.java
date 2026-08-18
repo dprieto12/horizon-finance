@@ -6,6 +6,8 @@ import models.Transaction;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 // TODO: Review documentation
 
@@ -307,9 +309,9 @@ public class DatabaseManager {
     /**
      * Returns all transactions for a given account, ordered by date then transaction_id.
      * @param accountID Account to retrieve transactions for
-     * @return ArrayList of Transaction objects
+     * @return ObservableList of Transaction objects
      */
-    public ArrayList<Transaction> getTransactions(int accountID) {
+    public ObservableList<Transaction> getTransactions(int accountID) {
         String query = "SELECT * FROM transactions WHERE account_id = ? ORDER BY date, transaction_id";
         return queryTransactions(query, accountID);
     }
@@ -319,9 +321,9 @@ public class DatabaseManager {
      * @param accountID Account to retrieve transactions for
      * @param month     Month as integer (1–12), validated by caller
      * @param year      Four-digit year
-     * @return ArrayList of Transaction objects
+     * @return ObservableList of Transaction objects
      */
-    public ArrayList<Transaction> getTransactionsByMonth(int accountID, int month, int year) {
+    public ObservableList<Transaction> getTransactionsByMonth(int accountID, int month, int year) {
         String monthStr = String.format("%04d-%02d", year, month);
         String query = "SELECT * FROM transactions WHERE account_id = ? " +
                 "AND strftime('%Y-%m', date) = ? ORDER BY date, transaction_id";
@@ -332,9 +334,9 @@ public class DatabaseManager {
      * Returns all transactions for a given account matching a specific type.
      * @param accountID Account to retrieve transactions for
      * @param type      Transaction type to filter by (use Transaction.TYPE_* constants)
-     * @return ArrayList of Transaction objects
+     * @return ObservableList of Transaction objects
      */
-    public ArrayList<Transaction> getTransactionsByType(int accountID, String type) {
+    public ObservableList<Transaction> getTransactionsByType(int accountID, String type) {
         String query = "SELECT * FROM transactions WHERE account_id = ? AND type = ? " +
                 "ORDER BY date, transaction_id";
         return queryTransactions(query, accountID, type);
@@ -345,9 +347,9 @@ public class DatabaseManager {
      * Only meaningful for "purchase" type transactions — all other types have a null category.
      * @param accountID Account to retrieve transactions for
      * @param category  Purchase category to filter by (e.g. "Food", "Entertainment")
-     * @return ArrayList of Transaction objects
+     * @return ObservableList of Transaction objects
      */
-    public ArrayList<Transaction> getTransactionsByCategory(int accountID, String category) {
+    public ObservableList<Transaction> getTransactionsByCategory(int accountID, String category) {
         String query = "SELECT * FROM transactions WHERE account_id = ? AND category = ? " +
                 "ORDER BY date, transaction_id";
         return queryTransactions(query, accountID, category);
@@ -363,8 +365,8 @@ public class DatabaseManager {
      * positional index automatically — avoiding the previous bug where named params (param2, param3...) were
      * passed at the wrong index and silently returned empty results.
      */
-    private ArrayList<Transaction> queryTransactions(String query, int accountID, String... stringParams) {
-        ArrayList<Transaction> transactions = new ArrayList<>();
+    private ObservableList<Transaction> queryTransactions(String query, int accountID, String... stringParams) {
+        ObservableList<Transaction> transactions = FXCollections.observableArrayList();
         try (Connection conn = DriverManager.getConnection(databaseUrl);
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
