@@ -4,7 +4,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import utils.TextFieldFilters;
+import utils.TextFieldUtils;
 import utils.SceneManager;
 import database.DatabaseManager;
 
@@ -44,15 +44,15 @@ public class CreateAccountController {
             dollarTextField, centTextField};
 
         // Set text field limiters
-        firstNameTextField.setTextFormatter(TextFieldFilters.createLengthLimitFormatter(50));
-        lastNameTextField.setTextFormatter(TextFieldFilters.createLengthLimitFormatter(50));
-        accountNameTextField.setTextFormatter(TextFieldFilters.createLengthLimitFormatter(30));
-        dollarTextField.setTextFormatter(TextFieldFilters.createNumberLimitFormatter(9));
-        centTextField.setTextFormatter(TextFieldFilters.createNumberLimitFormatter(2));
+        firstNameTextField.setTextFormatter(TextFieldUtils.createLengthLimitFormatter(50));
+        lastNameTextField.setTextFormatter(TextFieldUtils.createLengthLimitFormatter(50));
+        accountNameTextField.setTextFormatter(TextFieldUtils.createLengthLimitFormatter(30));
+        dollarTextField.setTextFormatter(TextFieldUtils.createNumberLimitFormatter(9));
+        centTextField.setTextFormatter(TextFieldUtils.createNumberLimitFormatter(2));
     }
 
     public void createNewAccount(ActionEvent event) throws IOException {
-        if (fieldsAreFilled()) {
+        if (TextFieldUtils.fieldsAreFilled(textFields)) {
             String firstName = firstNameTextField.getText().trim();
             String lastName = lastNameTextField.getText().trim();
             String accountName = accountNameTextField.getText().trim();
@@ -64,14 +64,5 @@ public class CreateAccountController {
         } else {
             errorMessageLabel.setVisible(true);
         }
-    }
-
-    private boolean fieldsAreFilled() {
-        for (TextField t : textFields) {
-            if (t.getText().trim().isEmpty()) {
-                return false;
-            }
-        }
-        return true;
     }
 }

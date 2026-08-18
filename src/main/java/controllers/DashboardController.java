@@ -2,13 +2,15 @@ package controllers;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.control.Button;
 
 import utils.ApplicationState;
 import utils.SceneManager;
 
 import java.io.IOException;
 
+
+// TODO: Stylize
+// TODO: Add button to go back to account selection
 
 public class DashboardController {
     @FXML
@@ -29,7 +31,8 @@ public class DashboardController {
     }
 
     private void updateAccountBalanceLabel() {
-        String customBalance = "Account Balance: $" + ApplicationState.getCurrentAccount().getBalance();
+        String customBalance = "Account Balance: $" +
+                String.format("%.2f", ApplicationState.getCurrentAccount().getBalance());
         accountBalanceLabel.setText(customBalance);
     }
 
@@ -42,6 +45,6 @@ public class DashboardController {
     }
 
     public void viewAccount() throws IOException {
-        SceneManager.switchScene("/fxml/accountSettings");
+        SceneManager.switchScene("/fxml/accountSettings.fxml");
     }
 }

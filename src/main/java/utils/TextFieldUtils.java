@@ -1,16 +1,11 @@
 package utils;
 
-import javafx.application.Application;
-import javafx.scene.Scene;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
 import java.util.function.UnaryOperator;
-import java.lang.Character;
 
 
-public class TextFieldFilters {
+public class TextFieldUtils {
 
     public static TextFormatter<String> createLengthLimitFormatter(int maxLength) {
         UnaryOperator<TextFormatter.Change> filter = change -> {
@@ -40,6 +35,13 @@ public class TextFieldFilters {
         return new TextFormatter<>(filter);
     }
 
-
+    public static boolean fieldsAreFilled(TextField[] textFields) {
+        for (TextField t : textFields) {
+            if (t.getText().trim().isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
 
 }
