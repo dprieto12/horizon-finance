@@ -1,32 +1,237 @@
 package controllers;
 
 import database.DatabaseManager;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextField;
+import javafx.util.Callback;
+import models.Account;
 import models.Transaction;
 import utils.ApplicationState;
 import utils.SceneManager;
 
 import java.io.IOException;
+import java.time.LocalDate;
 
 public class TransactionOptionsController {
     @FXML
     private ListView<Transaction> transactionListView;
 
+    @FXML
+    private TextField amountTextField;
 
-    // TODO: Learn ListView to display and handle transactions
+    @FXML
+    private RadioButton expenseRadioButton;
+
+    @FXML
+    private RadioButton incomeRadioButton;
+
+    @FXML
+    private ComboBox<String> typeComboBox;
+
+    @FXML
+    private ComboBox<String> categoryComboBox;
+
+    @FXML
+    private DatePicker datePicker;
+
+    @FXML
+    private Label errorMessageLabel;
+
+    private ObservableList<Transaction> transactionsList;
+
     @FXML
     public void initialize() {
-        // Grab all transactions for the current account and place them in the ListView
-        // NOTE: This could be done in one statement, but it is more readable this way
-        int currentAccountID = ApplicationState.getCurrentAccount().getAccountID();
-        ObservableList<Transaction> transactionsList = DatabaseManager.getInstance().getTransactions(currentAccountID);
-        transactionListView.setItems(transactionsList);
+        // Initialize category combo box
+        categoryComboBox.setItems(FXCollections.observableArrayList(Transaction.purchaseCategories));
 
+        // Set default date to today
+        datePicker.setValue(LocalDate.now());
+
+        // Initialize with expense types selected by default
+        // (Radio button listeners won't fire on initialization since buttons are already selected)
+        typeComboBox.setItems(FXCollections.observableArrayList(Transaction.expenseTypes));
+
+        // Set up radio button listeners to filter type combo box
+        expenseRadioButton.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal) {
+                typeComboBox.setItems(FXCollections.observableArrayList(Transaction.expenseTypes));
+                typeComboBox.setValue(null);
+                categoryComboBox.setDisable(true);
+                categoryComboBox.setValue(null);
+            }
+        });
+
+        incomeRadioButton.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal) {
+                typeComboBox.setItems(FXCollections.observableArrayList(Transaction.incomeTypes));
+                typeComboBox.setValue(null);
+                categoryComboBox.setDisable(true);
+                categoryComboBox.setValue(null);
+            }
+        });
+
+        // Set up type combo box listener to enable/disable category
+        typeComboBox.setOnAction(event -> {
+            String selectedType = typeComboBox.getValue();
+            if (Transaction.requiresCategory(selectedType)) {
+                categoryComboBox.setDisable(false);
+            } else {
+                categoryComboBox.setDisable(true);
+                categoryComboBox.setValue(null);
+            }
+        });
+
+        // Load transactions
+        loadTransactions();
+
+        // Set custom cell factory to display running balance
+        transactionListView.setCellFactory(new Callback<ListView<Transaction>, ListCell<Transaction>>() {
+            @Override
+            public ListCell<Transaction> call(ListView<Transaction> param) {
+                return new ListCell<Transaction>() {
+                    @Override
+                    protected void updateItem(Transaction transaction, boolean empty) {
+                        super.updateItem(transaction, empty);
+                        if (empty || transaction == null) {
+                            setText(null);
+                        } else {
+                            // Calculate running balance up to this transaction
+                            double runningBalance = calculateRunningBalance(transaction);
+                            String display = String.format("$%.2f | %s", transaction.getAmount(), transaction.getType());
+                            if (Transaction.requiresCategory(transaction.getType()) && transaction.getCategory() != null) {
+                                display += " - " + transaction.getCategory();
+                            }
+                            display += " | " + transaction.getDate() + " | Balance: $" + String.format("%.2f", runningBalance);
+                            setText(display);
+                        }
+                    }
+                };
+            }
+        });
     }
 
+    private void loadTransactions() {
+        int currentAccountID = ApplicationState.getCurrentAccount().getAccountID();
+        transactionsList = DatabaseManager.getInstance().getTransactions(currentAccountID);
+        transactionListView.setItems(transactionsList);
+    }
 
+    private double calculateRunningBalance(Transaction targetTransaction) {
+        Account currentAccount = DatabaseManager.getInstance().getAccount(ApplicationState.getCurrentAccount().getAccountID());
+        double balance = currentAccount.getBalance();
+
+        // Start from the end and work backwards to find the balance after this transaction
+        // This is more efficient than calculating from the beginning
+        boolean foundTarget = false;
+        double runningBalance = balance;
+
+        for (int i = transactionsList.size() - 1; i >= 0; i--) {
+            Transaction t = transactionsList.get(i);
+            if (foundTarget) {
+                // Reverse the effect of this transaction to get the balance before it
+                if (Transaction.isExpense(t.getType())) {
+                    runningBalance += t.getAmount();
+                } else {
+                    runningBalance -= t.getAmount();
+                }
+            } else if (t.getTransactionID() == targetTransaction.getTransactionID()) {
+                foundTarget = true;
+            }
+        }
+
+        return runningBalance;
+    }
+
+    @FXML
+    public void addTransaction() {
+        try {
+            String amountText = amountTextField.getText().trim();
+            if (amountText.isEmpty()) {
+                showError("Amount is required");
+                return;
+            }
+
+            double amount = Double.parseDouble(amountText);
+            if (amount <= 0) {
+                showError("Amount must be positive");
+                return;
+            }
+
+            String type = typeComboBox.getValue();
+            if (type == null) {
+                showError("Type is required");
+                return;
+            }
+
+            String category = null;
+            if (Transaction.requiresCategory(type)) {
+                category = categoryComboBox.getValue();
+                if (category == null) {
+                    showError("Category is required for purchases");
+                    return;
+                }
+            }
+
+            LocalDate date = datePicker.getValue();
+            if (date == null) {
+                showError("Date is required");
+                return;
+            }
+
+            int accountID = ApplicationState.getCurrentAccount().getAccountID();
+            DatabaseManager.getInstance().createTransaction(accountID, amount, type, category, date);
+
+            // Refresh transactions and account
+            loadTransactions();
+            ApplicationState.setCurrentAccount(DatabaseManager.getInstance().getAccount(accountID));
+
+            // Clear input fields and reset UI state
+            amountTextField.clear();
+            typeComboBox.setValue(null);
+            categoryComboBox.setValue(null);
+            categoryComboBox.setDisable(true);
+            datePicker.setValue(LocalDate.now());
+            hideError();
+
+        } catch (NumberFormatException e) {
+            showError("Invalid amount format");
+        }
+    }
+
+    @FXML
+    public void deleteTransaction() {
+        Transaction selectedTransaction = transactionListView.getSelectionModel().getSelectedItem();
+        if (selectedTransaction == null) {
+            showError("Please select a transaction to delete");
+            return;
+        }
+
+        DatabaseManager.getInstance().deleteTransaction(selectedTransaction);
+
+        // Refresh transactions and account
+        int accountID = ApplicationState.getCurrentAccount().getAccountID();
+        loadTransactions();
+        ApplicationState.setCurrentAccount(DatabaseManager.getInstance().getAccount(accountID));
+
+        hideError();
+    }
+
+    private void showError(String message) {
+        errorMessageLabel.setText(message);
+        errorMessageLabel.setVisible(true);
+    }
+
+    private void hideError() {
+        errorMessageLabel.setVisible(false);
+    }
 
     public void goBack() throws IOException {
         SceneManager.switchScene("/fxml/dashboard.fxml");

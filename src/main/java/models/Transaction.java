@@ -18,18 +18,18 @@ public class Transaction {
     private LocalDate date;
 
     // Expense types — subtract from balance
-    public static final String TYPE_PURCHASE = "purchase";
-    public static final String TYPE_TRANSFER = "transfer";
-    public static final String TYPE_WITHDRAWAL = "withdrawal";
-    public static final String TYPE_BILL = "bill";
-    public static final String TYPE_FEE = "fee";
+    public static final String TYPE_PURCHASE = "Purchase";
+    public static final String TYPE_TRANSFER = "Transfer";
+    public static final String TYPE_WITHDRAWAL = "Withdrawal";
+    public static final String TYPE_BILL = "Bill";
+    public static final String TYPE_FEE = "Fee";
 
     // Income types — add to balance
-    public static final String TYPE_WAGES = "wages";
-    public static final String TYPE_SALE = "sale";
-    public static final String TYPE_GIFT = "gift";
-    public static final String TYPE_REFUND = "refund";
-    public static final String TYPE_INTEREST = "interest";
+    public static final String TYPE_WAGES = "Wages";
+    public static final String TYPE_SALE = "Sale";
+    public static final String TYPE_GIFT = "Gift";
+    public static final String TYPE_REFUND = "Refund";
+    public static final String TYPE_INTEREST = "Interest";
 
     public static final String[] expenseTypes = {TYPE_PURCHASE, TYPE_TRANSFER, TYPE_WITHDRAWAL, TYPE_BILL, TYPE_FEE};
     public static final String[] incomeTypes = {TYPE_WAGES, TYPE_SALE, TYPE_GIFT, TYPE_REFUND, TYPE_INTEREST};
@@ -77,7 +77,7 @@ public class Transaction {
      */
     public static boolean isExpense(String type) {
         for (String expenseType : expenseTypes) {
-            if (expenseType.equals(type)) {
+            if (expenseType.equalsIgnoreCase(type)) {
                 return true;
             }
         }
@@ -90,7 +90,7 @@ public class Transaction {
      * @return true if category is required
      */
     public static boolean requiresCategory(String type) {
-        return TYPE_PURCHASE.equals(type);
+        return TYPE_PURCHASE.equalsIgnoreCase(type);
     }
 
     /**
