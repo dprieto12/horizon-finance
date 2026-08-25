@@ -46,7 +46,7 @@ public class DashboardController {
     }
 
     public void viewAnalytics() throws IOException {
-        SceneManager.switchScene("/fxml/viewAnalytics.fxml");
+        SceneManager.switchScene("/fxml/analyticsDashboard.fxml");
     }
 
     public void viewAccount() throws IOException {
