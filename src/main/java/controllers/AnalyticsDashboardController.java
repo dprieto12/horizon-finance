@@ -1,6 +1,7 @@
 package controllers;
 
 import database.DatabaseManager;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
@@ -8,6 +9,7 @@ import javafx.scene.chart.StackedBarChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.DatePicker;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 import models.Account;
 import models.AccountSummary;
 import models.Transaction;
@@ -21,10 +23,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 // TODO: Document
@@ -62,6 +61,8 @@ public class AnalyticsDashboardController {
 
     private StackedBarChart<Number, String> barChart;
 
+    private Label topTransactionsLabel;
+
     @FXML
     public void initialize() {
         updateAccountInfoLabel();
@@ -82,6 +83,8 @@ public class AnalyticsDashboardController {
         SceneManager.switchScene("/fxml/dashboard.fxml");
     }
 
+    // TODO: Consolodate outer helper methods into a refresh() method to avoid code duplication
+
     // These methods correspond to buttons and set the chosenTransactions ObservableList, also changing the summaryLabel
     // to the corresponding time period
 
@@ -94,6 +97,7 @@ public class AnalyticsDashboardController {
 
         setTotalsLabel(thisMonth, today);
         plotIncomeExpenseBarChart();
+        setTopTransactionsLabel();
     }
 
     public void getLast3Months() throws SQLException {
@@ -105,6 +109,7 @@ public class AnalyticsDashboardController {
 
         setTotalsLabel(threeMonthsAgo, today);
         plotIncomeExpenseBarChart();
+        setTopTransactionsLabel();
     }
 
     public void getLast6Months() throws SQLException {
@@ -116,6 +121,7 @@ public class AnalyticsDashboardController {
 
         setTotalsLabel(sixMonthsAgo, today);
         plotIncomeExpenseBarChart();
+        setTopTransactionsLabel();
     }
 
     public void getThisYear() throws SQLException {
@@ -127,6 +133,7 @@ public class AnalyticsDashboardController {
 
         setTotalsLabel(thisYear, today);
         plotIncomeExpenseBarChart();
+        setTopTransactionsLabel();
     }
 
     public void getAllTime() throws SQLException {
@@ -135,6 +142,7 @@ public class AnalyticsDashboardController {
 
         setTotalsLabel(LocalDate.MIN, LocalDate.now());
         plotIncomeExpenseBarChart();
+        setTopTransactionsLabel();
     }
 
     public void customDate() throws SQLException {
@@ -153,6 +161,7 @@ public class AnalyticsDashboardController {
 
             setTotalsLabel(fromDate, toDate);
             plotIncomeExpenseBarChart();
+            setTopTransactionsLabel();
         }
     }
 
@@ -268,6 +277,37 @@ public class AnalyticsDashboardController {
 
     // TODO: Implement display of top transactions from chosen time period
     private void setTopTransactionsLabel() {
+        removeExistingTopTransactionsLabel();
 
+        topTransactionsLabel = new Label();
+        topTransactionsLabel.setFont(new Font(14));
+
+        ObservableList<Transaction> topFiveList = getTopTransactions();
+        if (topFiveList.isEmpty()) {
+            topTransactionsLabel.setText("Top Transactions:\nNo transactions found for this period.");
+        } else {
+            StringBuilder sb = new StringBuilder("Top Transactions:\n");
+            for (Transaction transaction : topFiveList) {
+                sb.append(transaction.toString()).append("\n");
+            }
+            topTransactionsLabel.setText(sb.toString());
+        }
+
+        mainVBox.getChildren().add(topTransactionsLabel);
+    }
+
+    private void removeExistingTopTransactionsLabel() {
+        if (topTransactionsLabel != null) {
+            mainVBox.getChildren().remove(topTransactionsLabel);
+        }
+    }
+
+    private ObservableList<Transaction> getTopTransactions() {
+        ObservableList<Transaction> topFiveList = chosenTransactions.stream()
+                .sorted(Comparator.comparingDouble(Transaction::getAmount).reversed())
+                .limit(5)
+                .collect(Collectors.toCollection(FXCollections::observableArrayList));
+
+        return topFiveList;
     }
 }
