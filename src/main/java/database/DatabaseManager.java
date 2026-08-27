@@ -319,33 +319,37 @@ public class DatabaseManager {
         return queryTransactions(query, accountID);
     }
 
-    // TODO: Rework method to use date range (bar graph, top transactions)
+    // TODO: Rework methods to use two dates instead of one
+
+
     /**
-     * Returns all transactions for a given account since a specific date.
+     * Returns all transactions for a given account within a specific date range.
      * @param accountID Account to retrieve transactions for
      * @param sinceDate Start date (inclusive)
+     * @param toDate End date (inclusive)
      * @return ObservableList of Transaction objects
      */
-    public ObservableList<Transaction> getTransactionsByDateRange(int accountID, LocalDate sinceDate) {
-        String query = "SELECT * FROM transactions WHERE account_id = ? AND date >= ? ORDER BY date, transaction_id";
-        return queryTransactions(query, accountID, sinceDate.toString());
+    public ObservableList<Transaction> getTransactionsByDateRange(int accountID, LocalDate sinceDate, LocalDate toDate) {
+        String query = "SELECT * FROM transactions WHERE account_id = ? AND date >= ? AND date <= ? ORDER BY date, transaction_id";
+        return queryTransactions(query, accountID, sinceDate.toString(), toDate.toString());
     }
 
-    // TODO: Rework method to use date range and transaction type (pie charts 1 & 2)
     /**
-     * Returns a map of transaction types to their total amounts for a given account since a specific date.
+     * Returns a map of transaction types to their total amounts for a given account within a specific date range.
      * @param accountID Account to retrieve transactions for
      * @param sinceDate Start date (inclusive)
+     * @param toDate End date (inclusive)
      * @return Map where key is transaction type and value is sum of amounts
      */
-    public Map<String, Double> getTransactionsByTypeAndDateRange(int accountID, LocalDate sinceDate) {
+    public Map<String, Double> getTransactionsByTypeAndDateRange(int accountID, LocalDate sinceDate, LocalDate toDate) {
         String query = "SELECT type, SUM(amount) as total FROM transactions " +
-                "WHERE account_id = ? AND date >= ? GROUP BY type";
+                "WHERE account_id = ? AND date >= ? AND date <= ? GROUP BY type";
         Map<String, Double> result = new java.util.HashMap<>();
         try (Connection conn = DriverManager.getConnection(databaseUrl);
              PreparedStatement pstmt = conn.prepareStatement(query)) {
             pstmt.setInt(1, accountID);
             pstmt.setString(2, sinceDate.toString());
+            pstmt.setString(3, toDate.toString());
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 result.put(rs.getString("type"), rs.getDouble("total"));
@@ -356,22 +360,23 @@ public class DatabaseManager {
         return result;
     }
 
-    // TODO: Rework method to use date range and transaction type (pie chart 3)
     /**
-     * Returns a map of purchase categories to their total amounts for a given account since a specific date.
+     * Returns a map of purchase categories to their total amounts for a given account within a specific date range.
      * Only includes "purchase" type transactions.
      * @param accountID Account to retrieve transactions for
      * @param sinceDate Start date (inclusive)
+     * @param toDate End date (inclusive)
      * @return Map where key is category and value is sum of amounts
      */
-    public Map<String, Double> getPurchasesByCategoryAndDateRange(int accountID, LocalDate sinceDate) {
+    public Map<String, Double> getPurchasesByCategoryAndDateRange(int accountID, LocalDate sinceDate, LocalDate toDate) {
         String query = "SELECT category, SUM(amount) as total FROM transactions " +
-                "WHERE account_id = ? AND date >= ? AND type = 'Purchase' GROUP BY category";
+                "WHERE account_id = ? AND date >= ? AND date <= ? AND type = 'Purchase' GROUP BY category";
         Map<String, Double> result = new java.util.HashMap<>();
         try (Connection conn = DriverManager.getConnection(databaseUrl);
              PreparedStatement pstmt = conn.prepareStatement(query)) {
             pstmt.setInt(1, accountID);
             pstmt.setString(2, sinceDate.toString());
+            pstmt.setString(3, toDate.toString());
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 result.put(rs.getString("category"), rs.getDouble("total"));
@@ -395,27 +400,29 @@ public class DatabaseManager {
         return queryTransactions(query, accountID, category);
     }
 
-    public AccountSummary getSummary(int accountID, LocalDate sinceDate) throws SQLException {
+    public AccountSummary getSummary(int accountID, LocalDate sinceDate, LocalDate toDate) throws SQLException {
         String summaryQuery = "SELECT " +
                 "SUM(CASE WHEN type IN('Wages', 'Sale', 'Gift', 'Refund', 'Interest') THEN amount ELSE 0 END) as income, " +
                 "SUM(CASE WHEN type NOT IN('Wages', 'Sale', 'Gift', 'Refund', 'Interest') THEN amount ELSE 0 END) as expenses " +
                 "FROM transactions " +
-                "WHERE account_id = ? AND date >= ?";
+                "WHERE account_id = ? AND date >= ? AND date <= ?";
 
         String monthQuery = "SELECT COUNT(DISTINCT strftime('%Y-%m', date)) as active_months " +
                 "FROM transactions " +
-                "WHERE account_id = ? AND date >= ?";
+                "WHERE account_id = ? AND date >= ? AND date <= ?";
 
         try (Connection conn = DriverManager.getConnection(databaseUrl);
             PreparedStatement summaryStmt = conn.prepareStatement(summaryQuery)) {
             summaryStmt.setInt(1, accountID);
             summaryStmt.setString(2, sinceDate.toString());
+            summaryStmt.setString(3, toDate.toString());
 
             ResultSet summaryRs = summaryStmt.executeQuery();
 
             PreparedStatement monthPstmt = conn.prepareStatement(monthQuery);
             monthPstmt.setInt(1, accountID);
             monthPstmt.setString(2, sinceDate.toString());
+            monthPstmt.setString(3, toDate.toString());
 
             ResultSet monthRs = monthPstmt.executeQuery();
 

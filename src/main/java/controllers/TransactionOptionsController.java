@@ -181,8 +181,8 @@ public class TransactionOptionsController {
             }
 
             LocalDate date = datePicker.getValue();
-            if (date == null) {
-                showError("Date is required");
+            if (date == null || date.isAfter(LocalDate.now())) {
+                showError("Date is empty or invalid");
                 return;
             }
 

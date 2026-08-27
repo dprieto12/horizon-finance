@@ -2,6 +2,12 @@ package controllers;
 
 import database.DatabaseManager;
 import javafx.collections.ObservableList;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.StackedBarChart;
+import javafx.scene.chart.XYChart;
+import javafx.scene.control.DatePicker;
+import javafx.scene.layout.VBox;
 import models.Account;
 import models.AccountSummary;
 import models.Transaction;
@@ -14,18 +20,38 @@ import utils.SceneManager;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+
+// TODO: Document
+// TODO: Stylize
 
 // TODO: Implement custom dates
-// TODO: Implement income/expense bar graphs
 // TODO: Implement type/category pie charts
 // TODO: Implement top transactions
 
 public class AnalyticsDashboardController {
     @FXML
+    private VBox mainVBox;
+
+    @FXML
     private Label accountInfoLabel;
 
     @FXML
     private Label summaryLabel;
+
+    @FXML
+    private DatePicker fromDatePicker;
+
+    @FXML
+    private DatePicker toDatePicker;
+
+    @FXML
+    private Label invalidDateLabel;
 
     @FXML
     private Label totalsLabel;
@@ -34,10 +60,17 @@ public class AnalyticsDashboardController {
 
     private ObservableList<Transaction> chosenTransactions;
 
+    private StackedBarChart<Number, String> barChart;
+
     @FXML
-    public void initialize() throws SQLException {
+    public void initialize() {
         updateAccountInfoLabel();
-        getAllTime();
+        try {
+            getAllTime();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            totalsLabel.setText("Error loading data");
+        }
     }
 
     private void updateAccountInfoLabel() {
@@ -55,49 +88,186 @@ public class AnalyticsDashboardController {
     public void getThisMonth() throws SQLException {
         summaryLabel.setText("Summary - This Month:");
         LocalDate thisMonth = LocalDate.now().withDayOfMonth(1);
+        LocalDate today = LocalDate.now();
         chosenTransactions = DatabaseManager.getInstance().getTransactionsByDateRange(currentAccount.getAccountID(),
-                thisMonth);
+                thisMonth, today);
 
-        setTotalsLabel(thisMonth);
+        setTotalsLabel(thisMonth, today);
+        plotIncomeExpenseBarChart();
     }
 
     public void getLast3Months() throws SQLException {
         summaryLabel.setText("Summary - Last 3 Months:");
         LocalDate threeMonthsAgo = LocalDate.now().withDayOfMonth(1).minusMonths(3);
+        LocalDate today = LocalDate.now();
         chosenTransactions = DatabaseManager.getInstance().getTransactionsByDateRange(currentAccount.getAccountID(),
-                threeMonthsAgo);
+                threeMonthsAgo, today);
 
-        setTotalsLabel(threeMonthsAgo);
+        setTotalsLabel(threeMonthsAgo, today);
+        plotIncomeExpenseBarChart();
     }
 
     public void getLast6Months() throws SQLException {
         summaryLabel.setText("Summary - Last 6 Months:");
         LocalDate sixMonthsAgo = LocalDate.now().withDayOfMonth(1).minusMonths(6);
+        LocalDate today = LocalDate.now();
         chosenTransactions = DatabaseManager.getInstance().getTransactionsByDateRange(currentAccount.getAccountID(),
-                sixMonthsAgo);
+                sixMonthsAgo, today);
 
-        setTotalsLabel(sixMonthsAgo);
+        setTotalsLabel(sixMonthsAgo, today);
+        plotIncomeExpenseBarChart();
     }
 
     public void getThisYear() throws SQLException {
         summaryLabel.setText("Summary - This Year:");
         LocalDate thisYear = LocalDate.now().withDayOfYear(1);
+        LocalDate today = LocalDate.now();
         chosenTransactions = DatabaseManager.getInstance().getTransactionsByDateRange(currentAccount.getAccountID(),
-                thisYear);
+                thisYear, today);
 
-        setTotalsLabel(thisYear);
+        setTotalsLabel(thisYear, today);
+        plotIncomeExpenseBarChart();
     }
 
     public void getAllTime() throws SQLException {
         summaryLabel.setText("Summary - All Time:");
         chosenTransactions = DatabaseManager.getInstance().getTransactions(currentAccount.getAccountID());
 
-        setTotalsLabel(LocalDate.MIN);
+        setTotalsLabel(LocalDate.MIN, LocalDate.now());
+        plotIncomeExpenseBarChart();
     }
 
-    private void setTotalsLabel(LocalDate sinceDate) throws SQLException {
+    public void customDate() throws SQLException {
+        LocalDate fromDate = fromDatePicker.getValue();
+        LocalDate toDate = toDatePicker.getValue();
+
+        boolean invalidDate = fromDate == null || toDate == null || fromDate.isAfter(toDate) || toDate.isBefore(LocalDate.now());
+
+        if (invalidDate) {
+            invalidDateLabel.setVisible(true);
+        } else {
+            invalidDateLabel.setVisible(false);
+            summaryLabel.setText("Summary - Custom Range:");
+            chosenTransactions = DatabaseManager.getInstance().getTransactionsByDateRange(currentAccount.getAccountID(),
+                    fromDate, toDate);
+
+            setTotalsLabel(fromDate, toDate);
+            plotIncomeExpenseBarChart();
+        }
+    }
+
+    private void setTotalsLabel(LocalDate sinceDate, LocalDate toDate) throws SQLException {
         AccountSummary currentAccountSummary = DatabaseManager.getInstance().getSummary(currentAccount.getAccountID(),
-                sinceDate);
+                sinceDate, toDate);
         totalsLabel.setText(currentAccountSummary.toString());
+    }
+    
+    private void plotIncomeExpenseBarChart() {
+        removeExistingChart();
+
+        Map<String, Double> incomeValues = getMapByTypeArray(Transaction.incomeTypes);
+        Map<String, Double> expenseValues = getMapByTypeArray(Transaction.expenseTypes);
+
+        Set<String> allMonths = getAllMonths(incomeValues, expenseValues);
+
+        barChart = createChart();
+
+        XYChart.Series<Number, String> incomeSeries = createSeriesFromMap(incomeValues, allMonths, "Income");
+        XYChart.Series<Number, String> expenseSeries = createSeriesFromMap(expenseValues, allMonths, "Expenses");
+
+        barChart.getData().addAll(incomeSeries, expenseSeries);
+        styleBars();
+
+        mainVBox.getChildren().add(barChart);
+    }
+
+    private void removeExistingChart() {
+        if (barChart != null) {
+            mainVBox.getChildren().remove(barChart);
+        }
+    }
+
+    private Set<String> getAllMonths(Map<String, Double> incomeValues, Map<String, Double> expenseValues) {
+        Set<String> allMonths = new TreeSet<>();
+        allMonths.addAll(incomeValues.keySet());
+        allMonths.addAll(expenseValues.keySet());
+        return allMonths;
+    }
+
+    private StackedBarChart<Number, String> createChart() {
+        CategoryAxis yAxis = new CategoryAxis();
+        yAxis.setLabel("Month");
+
+        NumberAxis xAxis = new NumberAxis();
+        xAxis.setLabel("Amount");
+        xAxis.setTickUnit(100);
+        xAxis.setMinorTickVisible(false);
+
+        StackedBarChart<Number, String> chart = new StackedBarChart<>(xAxis, yAxis);
+        chart.setTitle("Income vs. Expenses");
+        chart.setLegendVisible(true);
+        chart.setHorizontalGridLinesVisible(false);
+        chart.setVerticalGridLinesVisible(false);
+        return chart;
+    }
+
+    private XYChart.Series<Number, String> createSeriesFromMap(Map<String, Double> values, Set<String> allMonths, String seriesName) {
+        XYChart.Series<Number, String> series = new XYChart.Series<>();
+        series.setName(seriesName);
+
+        for (String month : allMonths) {
+            double amount = values.getOrDefault(month, 0.0);
+            XYChart.Data<Number, String> data = new XYChart.Data<>(amount, month);
+            series.getData().add(data);
+        }
+
+        return series;
+    }
+
+    private void styleBars() {
+        for (XYChart.Series<Number, String> series : barChart.getData()) {
+            for (XYChart.Data<Number, String> data : series.getData()) {
+                javafx.scene.Node node = data.getNode();
+                if (node != null) {
+                    applyBarColor(node, series.getName());
+                    addTooltip(node, series.getName(), data.getXValue());
+                }
+            }
+        }
+    }
+
+    private void applyBarColor(javafx.scene.Node node, String seriesName) {
+        if (seriesName.equals("Income")) {
+            node.setStyle("-fx-bar-fill: #4CAF50;"); // Green
+        } else {
+            node.setStyle("-fx-bar-fill: #F44336;"); // Red
+        }
+    }
+
+    private void addTooltip(javafx.scene.Node node, String seriesName, Number value) {
+        javafx.scene.control.Tooltip tooltip = new javafx.scene.control.Tooltip(
+                seriesName + ": $" + String.format("%.2f", value));
+        javafx.scene.control.Tooltip.install(node, tooltip);
+    }
+
+    private Map<String, Double> getMapByTypeArray(String[] types) {
+        Map<String, Double> monthlyValues = chosenTransactions.stream()
+                .filter(t -> Arrays.asList(types).contains(t.getType()))
+                .collect(Collectors.groupingBy(
+                        t -> t.getDate().format(DateTimeFormatter.ofPattern("yyyy-MM")),
+                        Collectors.summingDouble(Transaction::getAmount)
+                ));
+
+        return monthlyValues;
+    }
+
+    // TODO: implement display of pie charts
+    private void plotPieCharts() {
+
+    }
+
+    // TODO: Implement display of top transactions from chosen time period
+    private void setTopTransactionsLabel() {
+
     }
 }
