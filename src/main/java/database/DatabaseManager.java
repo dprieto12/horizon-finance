@@ -1,11 +1,14 @@
 package database;
 
 import models.Account;
+import models.AccountSummary;
 import models.Transaction;
 
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Map;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -316,30 +319,67 @@ public class DatabaseManager {
         return queryTransactions(query, accountID);
     }
 
+    // TODO: Rework method to use date range (bar graph, top transactions)
     /**
-     * Returns all transactions for a given account in a specific month and year.
+     * Returns all transactions for a given account since a specific date.
      * @param accountID Account to retrieve transactions for
-     * @param month     Month as integer (1–12), validated by caller
-     * @param year      Four-digit year
+     * @param sinceDate Start date (inclusive)
      * @return ObservableList of Transaction objects
      */
-    public ObservableList<Transaction> getTransactionsByMonth(int accountID, int month, int year) {
-        String monthStr = String.format("%04d-%02d", year, month);
-        String query = "SELECT * FROM transactions WHERE account_id = ? " +
-                "AND strftime('%Y-%m', date) = ? ORDER BY date, transaction_id";
-        return queryTransactions(query, accountID, monthStr);
+    public ObservableList<Transaction> getTransactionsByDateRange(int accountID, LocalDate sinceDate) {
+        String query = "SELECT * FROM transactions WHERE account_id = ? AND date >= ? ORDER BY date, transaction_id";
+        return queryTransactions(query, accountID, sinceDate.toString());
     }
 
+    // TODO: Rework method to use date range and transaction type (pie charts 1 & 2)
     /**
-     * Returns all transactions for a given account matching a specific type.
+     * Returns a map of transaction types to their total amounts for a given account since a specific date.
      * @param accountID Account to retrieve transactions for
-     * @param type      Transaction type to filter by (use Transaction.TYPE_* constants)
-     * @return ObservableList of Transaction objects
+     * @param sinceDate Start date (inclusive)
+     * @return Map where key is transaction type and value is sum of amounts
      */
-    public ObservableList<Transaction> getTransactionsByType(int accountID, String type) {
-        String query = "SELECT * FROM transactions WHERE account_id = ? AND type = ? " +
-                "ORDER BY date, transaction_id";
-        return queryTransactions(query, accountID, type);
+    public Map<String, Double> getTransactionsByTypeAndDateRange(int accountID, LocalDate sinceDate) {
+        String query = "SELECT type, SUM(amount) as total FROM transactions " +
+                "WHERE account_id = ? AND date >= ? GROUP BY type";
+        Map<String, Double> result = new java.util.HashMap<>();
+        try (Connection conn = DriverManager.getConnection(databaseUrl);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, accountID);
+            pstmt.setString(2, sinceDate.toString());
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                result.put(rs.getString("type"), rs.getDouble("total"));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
+    }
+
+    // TODO: Rework method to use date range and transaction type (pie chart 3)
+    /**
+     * Returns a map of purchase categories to their total amounts for a given account since a specific date.
+     * Only includes "purchase" type transactions.
+     * @param accountID Account to retrieve transactions for
+     * @param sinceDate Start date (inclusive)
+     * @return Map where key is category and value is sum of amounts
+     */
+    public Map<String, Double> getPurchasesByCategoryAndDateRange(int accountID, LocalDate sinceDate) {
+        String query = "SELECT category, SUM(amount) as total FROM transactions " +
+                "WHERE account_id = ? AND date >= ? AND type = 'Purchase' GROUP BY category";
+        Map<String, Double> result = new java.util.HashMap<>();
+        try (Connection conn = DriverManager.getConnection(databaseUrl);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, accountID);
+            pstmt.setString(2, sinceDate.toString());
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                result.put(rs.getString("category"), rs.getDouble("total"));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 
     /**
@@ -355,8 +395,43 @@ public class DatabaseManager {
         return queryTransactions(query, accountID, category);
     }
 
+    public AccountSummary getSummary(int accountID, LocalDate sinceDate) throws SQLException {
+        String summaryQuery = "SELECT " +
+                "SUM(CASE WHEN type IN('Wages', 'Sale', 'Gift', 'Refund', 'Interest') THEN amount ELSE 0 END) as income, " +
+                "SUM(CASE WHEN type NOT IN('Wages', 'Sale', 'Gift', 'Refund', 'Interest') THEN amount ELSE 0 END) as expenses " +
+                "FROM transactions " +
+                "WHERE account_id = ? AND date >= ?";
+
+        String monthQuery = "SELECT COUNT(DISTINCT strftime('%Y-%m', date)) as active_months " +
+                "FROM transactions " +
+                "WHERE account_id = ? AND date >= ?";
+
+        try (Connection conn = DriverManager.getConnection(databaseUrl);
+            PreparedStatement summaryStmt = conn.prepareStatement(summaryQuery)) {
+            summaryStmt.setInt(1, accountID);
+            summaryStmt.setString(2, sinceDate.toString());
+
+            ResultSet summaryRs = summaryStmt.executeQuery();
+
+            PreparedStatement monthPstmt = conn.prepareStatement(monthQuery);
+            monthPstmt.setInt(1, accountID);
+            monthPstmt.setString(2, sinceDate.toString());
+
+            ResultSet monthRs = monthPstmt.executeQuery();
+
+            double income = summaryRs.getDouble("income");
+            double expenses = summaryRs.getDouble("expenses");
+            double net = income - expenses;
+            double avgNetPerMonth = net / monthRs.getDouble("active_months");
+
+            return new AccountSummary(income, expenses, net, avgNetPerMonth);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
-     * Private helper that executes a parameterised transaction SELECT and maps each row to a Transaction object.
+     * Private helper that executes a parameterized transaction SELECT and maps each row to a Transaction object.
      *
      * accountID always fills position 1. Any additional string parameters are set sequentially from position 2
      * onward — callers must ensure the number of stringParams matches the remaining ? placeholders exactly.
