@@ -388,6 +388,57 @@ public class DatabaseManager {
     }
 
     /**
+     * Returns monthly income and expense totals for a given account within a specific date range.
+     * @param accountID Account to retrieve transactions for
+     * @param sinceDate Start date (inclusive), or null for all-time
+     * @param toDate End date (inclusive)
+     * @return Map with "Income" and "Expense" keys, each mapping to a month->amount map
+     */
+    public Map<String, Map<String, Double>> getMonthlyIncomeExpenseByDateRange(int accountID, LocalDate sinceDate, LocalDate toDate) {
+        String query;
+        if (sinceDate == null) {
+            query = "SELECT strftime('%Y-%m', date) as month, type, SUM(amount) as total " +
+                    "FROM transactions WHERE account_id = ? AND date <= ? " +
+                    "GROUP BY month, type";
+        } else {
+            query = "SELECT strftime('%Y-%m', date) as month, type, SUM(amount) as total " +
+                    "FROM transactions WHERE account_id = ? AND date >= ? AND date <= ? " +
+                    "GROUP BY month, type";
+        }
+
+        Map<String, Map<String, Double>> result = new java.util.HashMap<>();
+        result.put("Income", new java.util.HashMap<>());
+        result.put("Expense", new java.util.HashMap<>());
+
+        try (Connection conn = DriverManager.getConnection(databaseUrl);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, accountID);
+            if (sinceDate == null) {
+                pstmt.setString(2, toDate.toString());
+            } else {
+                pstmt.setString(2, sinceDate.toString());
+                pstmt.setString(3, toDate.toString());
+            }
+
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                String month = rs.getString("month");
+                String type = rs.getString("type");
+                double amount = rs.getDouble("total");
+
+                if (Transaction.isExpense(type)) {
+                    result.get("Expense").merge(month, amount, Double::sum);
+                } else {
+                    result.get("Income").merge(month, amount, Double::sum);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
+    }
+
+    /**
      * Returns all purchase transactions for a given account matching a specific category.
      * Only meaningful for "purchase" type transactions — all other types have a null category.
      * @param accountID Account to retrieve transactions for
@@ -438,6 +489,25 @@ public class DatabaseManager {
     }
 
     /**
+     * Returns the top transactions by amount for a given account within a specific date range.
+     * @param accountID Account to retrieve transactions for
+     * @param sinceDate Start date (inclusive), or null for all-time
+     * @param toDate End date (inclusive)
+     * @param limit Maximum number of transactions to return
+     * @return ObservableList of Transaction objects, sorted by amount descending
+     */
+    public ObservableList<Transaction> getTopTransactionsByDateRange(int accountID, LocalDate sinceDate, LocalDate toDate, int limit) {
+        String query;
+        if (sinceDate == null) {
+            query = "SELECT * FROM transactions WHERE account_id = ? AND date <= ? ORDER BY amount DESC, transaction_id LIMIT ?";
+            return queryTransactionsWithLimit(query, accountID, toDate.toString(), String.valueOf(limit));
+        } else {
+            query = "SELECT * FROM transactions WHERE account_id = ? AND date >= ? AND date <= ? ORDER BY amount DESC, transaction_id LIMIT ?";
+            return queryTransactionsWithLimit(query, accountID, sinceDate.toString(), toDate.toString(), String.valueOf(limit));
+        }
+    }
+
+    /**
      * Private helper that executes a parameterized transaction SELECT and maps each row to a Transaction object.
      *
      * accountID always fills position 1. Any additional string parameters are set sequentially from position 2
@@ -455,6 +525,35 @@ public class DatabaseManager {
             pstmt.setInt(1, accountID);
             for (int i = 0; i < stringParams.length; i++) {
                 pstmt.setString(i + 2, stringParams[i]);
+            }
+
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                transactions.add(mapTransaction(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Failed to retrieve transactions: " + e.getMessage());
+        }
+        return transactions;
+    }
+
+    /**
+     * Private helper that executes a parameterized transaction SELECT with an integer LIMIT parameter.
+     * Similar to queryTransactions but supports integer parameters for LIMIT clauses.
+     */
+    private ObservableList<Transaction> queryTransactionsWithLimit(String query, int accountID, String... stringParams) {
+        ObservableList<Transaction> transactions = FXCollections.observableArrayList();
+        try (Connection conn = DriverManager.getConnection(databaseUrl);
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setInt(1, accountID);
+            for (int i = 0; i < stringParams.length; i++) {
+                String param = stringParams[i];
+                if (i == stringParams.length - 1 && param.matches("\\d+")) {
+                    pstmt.setInt(i + 2, Integer.parseInt(param));
+                } else {
+                    pstmt.setString(i + 2, param);
+                }
             }
 
             ResultSet rs = pstmt.executeQuery();

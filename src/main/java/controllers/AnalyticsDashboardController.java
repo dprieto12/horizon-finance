@@ -3,10 +3,7 @@ package controllers;
 import database.DatabaseManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.StackedBarChart;
-import javafx.scene.chart.XYChart;
+import javafx.scene.chart.*;
 import javafx.scene.control.DatePicker;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -57,8 +54,6 @@ public class AnalyticsDashboardController {
 
     private Account currentAccount = ApplicationState.getCurrentAccount();
 
-    private ObservableList<Transaction> chosenTransactions;
-
     private StackedBarChart<Number, String> barChart;
 
     private Label topTransactionsLabel;
@@ -85,64 +80,44 @@ public class AnalyticsDashboardController {
 
     // TODO: Consolodate outer helper methods into a refresh() method to avoid code duplication
 
-    // These methods correspond to buttons and set the chosenTransactions ObservableList, also changing the summaryLabel
-    // to the corresponding time period
+    // These methods correspond to buttons, changing data based on the time period
 
     public void getThisMonth() throws SQLException {
         summaryLabel.setText("Summary - This Month:");
         LocalDate thisMonth = LocalDate.now().withDayOfMonth(1);
         LocalDate today = LocalDate.now();
-        chosenTransactions = DatabaseManager.getInstance().getTransactionsByDateRange(currentAccount.getAccountID(),
-                thisMonth, today);
 
-        setTotalsLabel(thisMonth, today);
-        plotIncomeExpenseBarChart();
-        setTopTransactionsLabel();
+        refreshPage(thisMonth, today);
     }
 
     public void getLast3Months() throws SQLException {
         summaryLabel.setText("Summary - Last 3 Months:");
         LocalDate threeMonthsAgo = LocalDate.now().withDayOfMonth(1).minusMonths(3);
         LocalDate today = LocalDate.now();
-        chosenTransactions = DatabaseManager.getInstance().getTransactionsByDateRange(currentAccount.getAccountID(),
-                threeMonthsAgo, today);
 
-        setTotalsLabel(threeMonthsAgo, today);
-        plotIncomeExpenseBarChart();
-        setTopTransactionsLabel();
+        refreshPage(threeMonthsAgo, today);
     }
 
     public void getLast6Months() throws SQLException {
         summaryLabel.setText("Summary - Last 6 Months:");
         LocalDate sixMonthsAgo = LocalDate.now().withDayOfMonth(1).minusMonths(6);
         LocalDate today = LocalDate.now();
-        chosenTransactions = DatabaseManager.getInstance().getTransactionsByDateRange(currentAccount.getAccountID(),
-                sixMonthsAgo, today);
 
-        setTotalsLabel(sixMonthsAgo, today);
-        plotIncomeExpenseBarChart();
-        setTopTransactionsLabel();
+        refreshPage(sixMonthsAgo, today);
     }
 
     public void getThisYear() throws SQLException {
         summaryLabel.setText("Summary - This Year:");
         LocalDate thisYear = LocalDate.now().withDayOfYear(1);
         LocalDate today = LocalDate.now();
-        chosenTransactions = DatabaseManager.getInstance().getTransactionsByDateRange(currentAccount.getAccountID(),
-                thisYear, today);
 
-        setTotalsLabel(thisYear, today);
-        plotIncomeExpenseBarChart();
-        setTopTransactionsLabel();
+        refreshPage(thisYear, today);
     }
 
     public void getAllTime() throws SQLException {
         summaryLabel.setText("Summary - All Time:");
-        chosenTransactions = DatabaseManager.getInstance().getTransactions(currentAccount.getAccountID());
 
-        setTotalsLabel(LocalDate.MIN, LocalDate.now());
-        plotIncomeExpenseBarChart();
-        setTopTransactionsLabel();
+        refreshPage(LocalDate.MIN, LocalDate.now());
     }
 
     public void customDate() throws SQLException {
@@ -156,12 +131,10 @@ public class AnalyticsDashboardController {
         } else {
             invalidDateLabel.setVisible(false);
             summaryLabel.setText("Summary - Custom Range:");
-            chosenTransactions = DatabaseManager.getInstance().getTransactionsByDateRange(currentAccount.getAccountID(),
-                    fromDate, toDate);
 
             setTotalsLabel(fromDate, toDate);
-            plotIncomeExpenseBarChart();
-            setTopTransactionsLabel();
+            plotIncomeExpenseBarChart(fromDate, toDate);
+            setTopTransactionsLabel(fromDate, toDate);
         }
     }
 
@@ -171,11 +144,14 @@ public class AnalyticsDashboardController {
         totalsLabel.setText(currentAccountSummary.toString());
     }
     
-    private void plotIncomeExpenseBarChart() {
+    private void plotIncomeExpenseBarChart(LocalDate sinceDate, LocalDate toDate) {
         removeExistingChart();
 
-        Map<String, Double> incomeValues = getMapByTypeArray(Transaction.incomeTypes);
-        Map<String, Double> expenseValues = getMapByTypeArray(Transaction.expenseTypes);
+        Map<String, Map<String, Double>> monthlyData = DatabaseManager.getInstance().getMonthlyIncomeExpenseByDateRange(
+                currentAccount.getAccountID(), sinceDate, toDate);
+
+        Map<String, Double> incomeValues = monthlyData.get("Income");
+        Map<String, Double> expenseValues = monthlyData.get("Expense");
 
         Set<String> allMonths = getAllMonths(incomeValues, expenseValues);
 
@@ -259,30 +235,89 @@ public class AnalyticsDashboardController {
         javafx.scene.control.Tooltip.install(node, tooltip);
     }
 
-    private Map<String, Double> getMapByTypeArray(String[] types) {
-        Map<String, Double> monthlyValues = chosenTransactions.stream()
-                .filter(t -> Arrays.asList(types).contains(t.getType()))
-                .collect(Collectors.groupingBy(
-                        t -> t.getDate().format(DateTimeFormatter.ofPattern("yyyy-MM")),
-                        Collectors.summingDouble(Transaction::getAmount)
-                ));
-
-        return monthlyValues;
-    }
 
     // TODO: implement display of pie charts
-    private void plotPieCharts() {
+    private void plotPieCharts(LocalDate sinceDate, LocalDate toDate) {
+        removeExistingPieCharts();
 
+        Map<String, Double> typeAmountMap = DatabaseManager.getInstance().getTransactionsByTypeAndDateRange(
+                currentAccount.getAccountID(),
+                sinceDate,
+                toDate
+        );
+
+        Map<String, Double> purchaseCategoryAmountMap = DatabaseManager.getInstance().getPurchasesByCategoryAndDateRange(
+                currentAccount.getAccountID(),
+                sinceDate,
+                toDate
+        );
+
+        plotIncomePieChart(typeAmountMap);
+        plotExpensePieChart(typeAmountMap);
+        plotPurchasePieChart(purchaseCategoryAmountMap);
     }
 
-    // TODO: Implement display of top transactions from chosen time period
-    private void setTopTransactionsLabel() {
+    private void plotIncomePieChart(Map<String, Double> typeAmountMap) {
+        ObservableList<PieChart.Data> incomePieChartData = FXCollections.observableArrayList();
+
+        typeAmountMap.forEach((type, amount) -> {
+            if (!Transaction.isExpense(type)) {
+                incomePieChartData.add(new PieChart.Data(type, amount / typeAmountMap.values().stream().mapToDouble(Double::doubleValue).sum()));
+            }
+        });
+
+        PieChart incomePieChart = new PieChart(incomePieChartData);
+        incomePieChart.setTitle("Income by Type");
+        incomePieChart.setLegendVisible(true);
+        incomePieChart.setLabelsVisible(true);
+
+        mainVBox.getChildren().add(incomePieChart);
+    }
+
+    private void plotExpensePieChart(Map<String, Double> typeAmountMap) {
+        ObservableList<PieChart.Data> expensePieChartData = FXCollections.observableArrayList();
+
+        typeAmountMap.forEach((type, amount) -> {
+            if (Transaction.isExpense(type)) {
+                expensePieChartData.add(new PieChart.Data(type, amount / typeAmountMap.values().stream().mapToDouble(Double::doubleValue).sum()));
+            }
+        });
+
+        PieChart expensePieChart = new PieChart(expensePieChartData);
+        expensePieChart.setTitle("Expenses by Type");
+        expensePieChart.setLegendVisible(true);
+        expensePieChart.setLabelsVisible(true);
+
+        mainVBox.getChildren().add(expensePieChart);
+    }
+
+    private void plotPurchasePieChart(Map<String, Double> purchaseCategoryAmountMap) {
+        ObservableList<PieChart.Data> purchasePieChartData = FXCollections.observableArrayList();
+
+        purchaseCategoryAmountMap.forEach((category, amount) -> {
+            purchasePieChartData.add(new PieChart.Data(category, amount));
+        });
+
+        PieChart purchasePieChart = new PieChart(purchasePieChartData);
+        purchasePieChart.setTitle("Purchases by Category");
+        purchasePieChart.setLegendVisible(true);
+        purchasePieChart.setLabelsVisible(true);
+
+        mainVBox.getChildren().add(purchasePieChart);
+    }
+
+    private void removeExistingPieCharts() {
+        mainVBox.getChildren().removeIf(node -> node instanceof PieChart);
+    }
+
+    private void setTopTransactionsLabel(LocalDate sinceDate, LocalDate toDate) {
         removeExistingTopTransactionsLabel();
 
         topTransactionsLabel = new Label();
         topTransactionsLabel.setFont(new Font(14));
 
-        ObservableList<Transaction> topFiveList = getTopTransactions();
+        ObservableList<Transaction> topFiveList = DatabaseManager.getInstance().getTopTransactionsByDateRange(
+                currentAccount.getAccountID(), sinceDate, toDate, 5);
         if (topFiveList.isEmpty()) {
             topTransactionsLabel.setText("Top Transactions:\nNo transactions found for this period.");
         } else {
@@ -302,12 +337,11 @@ public class AnalyticsDashboardController {
         }
     }
 
-    private ObservableList<Transaction> getTopTransactions() {
-        ObservableList<Transaction> topFiveList = chosenTransactions.stream()
-                .sorted(Comparator.comparingDouble(Transaction::getAmount).reversed())
-                .limit(5)
-                .collect(Collectors.toCollection(FXCollections::observableArrayList));
-
-        return topFiveList;
+    private void refreshPage(LocalDate sinceDate, LocalDate toDate) throws SQLException {
+        setTotalsLabel(sinceDate, toDate);
+        plotIncomeExpenseBarChart(sinceDate, toDate);
+        plotPieCharts(sinceDate, toDate);
+        setTopTransactionsLabel(sinceDate, toDate);
     }
+
 }
