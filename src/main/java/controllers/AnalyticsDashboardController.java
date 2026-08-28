@@ -236,7 +236,7 @@ public class AnalyticsDashboardController {
     }
 
 
-    // TODO: implement display of pie charts
+    // TODO: If data is empty, show message
     private void plotPieCharts(LocalDate sinceDate, LocalDate toDate) {
         removeExistingPieCharts();
 
@@ -262,16 +262,22 @@ public class AnalyticsDashboardController {
 
         typeAmountMap.forEach((type, amount) -> {
             if (!Transaction.isExpense(type)) {
-                incomePieChartData.add(new PieChart.Data(type, amount / typeAmountMap.values().stream().mapToDouble(Double::doubleValue).sum()));
+                incomePieChartData.add(new PieChart.Data(pluralizeType(type), amount / typeAmountMap.values().stream().mapToDouble(Double::doubleValue).sum()));
             }
         });
 
-        PieChart incomePieChart = new PieChart(incomePieChartData);
-        incomePieChart.setTitle("Income by Type");
-        incomePieChart.setLegendVisible(true);
-        incomePieChart.setLabelsVisible(true);
+        if (incomePieChartData.isEmpty()) {
+            Label noDataLabel = new Label("No income data available for this period");
+            noDataLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 14px;");
+            mainVBox.getChildren().add(noDataLabel);
+        } else {
+            PieChart incomePieChart = new PieChart(incomePieChartData);
+            incomePieChart.setTitle("Income by Type");
+            incomePieChart.setLegendVisible(true);
+            incomePieChart.setLabelsVisible(true);
 
-        mainVBox.getChildren().add(incomePieChart);
+            mainVBox.getChildren().add(incomePieChart);
+        }
     }
 
     private void plotExpensePieChart(Map<String, Double> typeAmountMap) {
@@ -279,16 +285,22 @@ public class AnalyticsDashboardController {
 
         typeAmountMap.forEach((type, amount) -> {
             if (Transaction.isExpense(type)) {
-                expensePieChartData.add(new PieChart.Data(type, amount / typeAmountMap.values().stream().mapToDouble(Double::doubleValue).sum()));
+                expensePieChartData.add(new PieChart.Data(pluralizeType(type), amount / typeAmountMap.values().stream().mapToDouble(Double::doubleValue).sum()));
             }
         });
 
-        PieChart expensePieChart = new PieChart(expensePieChartData);
-        expensePieChart.setTitle("Expenses by Type");
-        expensePieChart.setLegendVisible(true);
-        expensePieChart.setLabelsVisible(true);
+        if (expensePieChartData.isEmpty()) {
+            Label noDataLabel = new Label("No expense data available for this period");
+            noDataLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 14px;");
+            mainVBox.getChildren().add(noDataLabel);
+        } else {
+            PieChart expensePieChart = new PieChart(expensePieChartData);
+            expensePieChart.setTitle("Expenses by Type");
+            expensePieChart.setLegendVisible(true);
+            expensePieChart.setLabelsVisible(true);
 
-        mainVBox.getChildren().add(expensePieChart);
+            mainVBox.getChildren().add(expensePieChart);
+        }
     }
 
     private void plotPurchasePieChart(Map<String, Double> purchaseCategoryAmountMap) {
@@ -298,17 +310,40 @@ public class AnalyticsDashboardController {
             purchasePieChartData.add(new PieChart.Data(category, amount));
         });
 
-        PieChart purchasePieChart = new PieChart(purchasePieChartData);
-        purchasePieChart.setTitle("Purchases by Category");
-        purchasePieChart.setLegendVisible(true);
-        purchasePieChart.setLabelsVisible(true);
+        if (purchasePieChartData.isEmpty()) {
+            Label noDataLabel = new Label("No purchase data available for this period");
+            noDataLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 14px;");
+            mainVBox.getChildren().add(noDataLabel);
+        } else {
+            PieChart purchasePieChart = new PieChart(purchasePieChartData);
+            purchasePieChart.setTitle("Purchases by Category");
+            purchasePieChart.setLegendVisible(true);
+            purchasePieChart.setLabelsVisible(true);
 
-        mainVBox.getChildren().add(purchasePieChart);
+            mainVBox.getChildren().add(purchasePieChart);
+        }
     }
 
     private void removeExistingPieCharts() {
-        mainVBox.getChildren().removeIf(node -> node instanceof PieChart);
+        mainVBox.getChildren().removeIf(node -> node instanceof PieChart ||
+            (node instanceof Label && ((Label) node).getText().contains("No ") && ((Label) node).getText().contains(" data available")));
     }
+
+    private String pluralizeType(String type) {
+        if (type == null) return type;
+        switch (type) {
+            case "Sale": return "Sales";
+            case "Purchase": return "Purchases";
+            case "Transfer": return "Transfers";
+            case "Withdrawal": return "Withdrawals";
+            case "Bill": return "Bills";
+            case "Fee": return "Fees";
+            case "Gift": return "Gifts";
+            case "Refund": return "Refunds";
+            default: return type; // Wages, Interest already plural or non-countable
+        }
+    }
+
 
     private void setTopTransactionsLabel(LocalDate sinceDate, LocalDate toDate) {
         removeExistingTopTransactionsLabel();
