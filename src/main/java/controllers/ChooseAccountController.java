@@ -29,6 +29,8 @@ public class ChooseAccountController {
 
     @FXML
     public void initialize() {
+        SceneManager.setTitle("Choose Account");
+
         try {
             ArrayList<Account> accounts = DatabaseManager.getInstance().getAccountList();
             for (Account a : accounts) {

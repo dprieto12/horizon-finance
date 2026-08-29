@@ -21,6 +21,8 @@ public class DashboardController {
 
     @FXML
     public void initialize() {
+        SceneManager.setTitle("Your Dashboard");
+
         updateWelcomeLabel();
         updateAccountBalanceLabel();
     }

@@ -46,6 +46,12 @@
             <version>3.53.0.0</version>
             <scope>compile</scope>
         </dependency>
+
+        <dependency>
+            <groupId>io.github.mkpaz</groupId>
+            <artifactId>atlantafx-base</artifactId>
+            <version>2.0.1</version>
+        </dependency>
     </dependencies>
 
     <build>

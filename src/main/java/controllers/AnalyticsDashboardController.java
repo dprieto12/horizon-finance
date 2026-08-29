@@ -3,6 +3,7 @@ package controllers;
 import database.DatabaseManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Scene;
 import javafx.scene.chart.AreaChart;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
@@ -69,6 +70,8 @@ public class AnalyticsDashboardController {
 
     @FXML
     public void initialize() {
+        SceneManager.setTitle("Analytics");
+
         updateAccountInfoLabel();
         try {
             getAllTime();

@@ -40,22 +40,10 @@ public class SceneManager {
     }
 
     /**
-     * Switches the current scene to the one specified by the passed FXML path and sends necessary controller data
-     * to the next scene. The controller of the passed scene must implement the DataReceiver interface, which will
-     * contain a receiveData() method to handle incoming data.
-     * @param FXMLPath Filepath to the FXML file to load
-     * @param controllerData Object that must be passed into the next controller using receiveData()
-     * @throws IOException Occurs if the FXML file cannot be loaded
+     * Sets the title of the window to the passed newTitle parameter to correspond to the current page.
+     * @param newPage Title of the new page / scene.
      */
-    public static void switchScene(String FXMLPath, Object controllerData) throws IOException {
-        // Load the FXML file and create a reference to its controller
-        FXMLLoader loader = new FXMLLoader(SceneManager.class.getResource(FXMLPath));
-        Parent root = loader.load();
-        Object controller = loader.getController();
-
-        // Then, set and show the new scene
-        Scene newScene = new Scene(root);
-        stage.setScene(newScene);
-        stage.show();
+    public static void setTitle(String newPage) {
+        stage.setTitle(newPage + " - Horizon Finance");
     }
 }

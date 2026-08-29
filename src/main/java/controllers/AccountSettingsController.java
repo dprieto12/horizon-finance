@@ -34,6 +34,8 @@ public class AccountSettingsController {
 
     @FXML
     public void initialize() {
+        SceneManager.setTitle("Account Settings");
+
         updateBalanceLabel();
         setTextFields();
     }

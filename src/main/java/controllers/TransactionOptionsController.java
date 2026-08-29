@@ -49,6 +49,8 @@ public class TransactionOptionsController {
 
     @FXML
     public void initialize() {
+        SceneManager.setTitle("Transaction Options");
+
         // Initialize category combo box
         categoryComboBox.setItems(FXCollections.observableArrayList(Transaction.purchaseCategories));
 

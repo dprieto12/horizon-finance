@@ -2,6 +2,7 @@ package controllers;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import utils.TextFieldUtils;
@@ -41,6 +42,8 @@ public class CreateAccountController {
 
     @FXML
     public void initialize() {
+        SceneManager.setTitle("Create Account");
+
         textFields = new TextField[]{firstNameTextField, lastNameTextField, accountNameTextField,
             dollarTextField, centTextField};
 

@@ -1,3 +1,4 @@
+import atlantafx.base.theme.*;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import utils.SceneManager;
@@ -19,6 +20,9 @@ public class Main extends Application {
     public void start(Stage stage) throws IOException {
         // Initialize database
         DatabaseManager.getInstance();
+
+        // Set stylizing
+        Application.setUserAgentStylesheet(new NordDark().getUserAgentStylesheet());
 
         // Set stage instance and load the initial scene
         SceneManager.setStage(stage);
