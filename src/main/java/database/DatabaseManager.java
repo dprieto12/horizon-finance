@@ -508,6 +508,48 @@ public class DatabaseManager {
     }
 
     /**
+     * Returns balance history for an account as a map of dates to balance values.
+     * This handles the case where transactions can be added with past dates by calculating
+     * the running balance chronologically from the initial balance.
+     * @param accountID Account to retrieve balance history for
+     * @return Map where key is date and value is balance on that date
+     */
+    public Map<LocalDate, Double> getBalanceHistory(int accountID) {
+        // Get current account balance
+        Account account = getAccount(accountID);
+        if (account == null) {
+            return new java.util.HashMap<>();
+        }
+        double currentBalance = account.getBalance();
+
+        // Get all transactions sorted by date
+        String query = "SELECT * FROM transactions WHERE account_id = ? ORDER BY date, transaction_id";
+        ObservableList<Transaction> allTransactions = queryTransactions(query, accountID);
+
+        // Calculate the net effect of all transactions
+        double netTransactionEffect = 0.0;
+        for (Transaction t : allTransactions) {
+            double signedAmount = Transaction.isExpense(t.getType()) ? -t.getAmount() : t.getAmount();
+            netTransactionEffect += signedAmount;
+        }
+
+        // Initial balance is current balance minus all transaction effects
+        double runningBalance = currentBalance - netTransactionEffect;
+
+        // Build balance history by walking through transactions chronologically
+        Map<LocalDate, Double> balanceHistory = new java.util.TreeMap<>();
+        balanceHistory.put(LocalDate.MIN, runningBalance); // Starting balance
+
+        for (Transaction t : allTransactions) {
+            double signedAmount = Transaction.isExpense(t.getType()) ? -t.getAmount() : t.getAmount();
+            runningBalance += signedAmount;
+            balanceHistory.put(t.getDate(), runningBalance);
+        }
+
+        return balanceHistory;
+    }
+
+    /**
      * Private helper that executes a parameterized transaction SELECT and maps each row to a Transaction object.
      *
      * accountID always fills position 1. Any additional string parameters are set sequentially from position 2

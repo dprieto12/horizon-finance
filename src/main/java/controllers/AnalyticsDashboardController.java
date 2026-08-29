@@ -3,7 +3,14 @@ package controllers;
 import database.DatabaseManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.chart.*;
+import javafx.scene.chart.AreaChart;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.PieChart;
+import javafx.scene.chart.StackedBarChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.DatePicker;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -55,6 +62,8 @@ public class AnalyticsDashboardController {
     private Account currentAccount = ApplicationState.getCurrentAccount();
 
     private StackedBarChart<Number, String> barChart;
+
+    private AreaChart<String, Number> balanceLineChart;
 
     private Label topTransactionsLabel;
 
@@ -170,6 +179,9 @@ public class AnalyticsDashboardController {
         if (barChart != null) {
             mainVBox.getChildren().remove(barChart);
         }
+        if (balanceLineChart != null) {
+            mainVBox.getChildren().remove(balanceLineChart);
+        }
     }
 
     private Set<String> getAllMonths(Map<String, Double> incomeValues, Map<String, Double> expenseValues) {
@@ -233,6 +245,58 @@ public class AnalyticsDashboardController {
         javafx.scene.control.Tooltip tooltip = new javafx.scene.control.Tooltip(
                 seriesName + ": $" + String.format("%.2f", value));
         javafx.scene.control.Tooltip.install(node, tooltip);
+    }
+
+    private void plotBalanceLineChart(LocalDate sinceDate, LocalDate toDate) {
+        removeExistingBalanceChart();
+
+        Map<LocalDate, Double> fullBalanceHistory = DatabaseManager.getInstance()
+                .getBalanceHistory(currentAccount.getAccountID());
+
+        // Filter to date range and convert to sorted list
+        List<Map.Entry<LocalDate, Double>> filteredEntries = fullBalanceHistory.entrySet().stream()
+                .filter(entry -> !entry.getKey().equals(LocalDate.MIN))
+                .filter(entry -> (entry.getKey().isEqual(sinceDate) || entry.getKey().isAfter(sinceDate)) &&
+                        (entry.getKey().isEqual(toDate) || entry.getKey().isBefore(toDate)))
+                .sorted(Map.Entry.comparingByKey())
+                .collect(Collectors.toList());
+
+        if (filteredEntries.isEmpty()) {
+            Label noDataLabel = new Label("No balance data available for this period");
+            noDataLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 14px;");
+            mainVBox.getChildren().add(noDataLabel);
+            return;
+        }
+
+        CategoryAxis xAxis = new CategoryAxis();
+        xAxis.setLabel("Date");
+
+        NumberAxis yAxis = new NumberAxis();
+        yAxis.setLabel("Balance ($)");
+
+        balanceLineChart = new AreaChart<>(xAxis, yAxis);
+        balanceLineChart.setTitle("Account Balance Over Time");
+        balanceLineChart.setLegendVisible(false);
+        balanceLineChart.setCreateSymbols(false);
+
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        for (Map.Entry<LocalDate, Double> entry : filteredEntries) {
+            String dateStr = entry.getKey().format(DateTimeFormatter.ofPattern("MMM yyyy"));
+            series.getData().add(new XYChart.Data<>(dateStr, entry.getValue()));
+        }
+
+        balanceLineChart.getData().add(series);
+        mainVBox.getChildren().add(balanceLineChart);
+    }
+
+    private void removeExistingBalanceChart() {
+        if (balanceLineChart != null) {
+            mainVBox.getChildren().remove(balanceLineChart);
+        }
+        mainVBox.getChildren().removeIf(node ->
+            node instanceof Label &&
+            ((Label) node).getText().equals("No balance data available for this period")
+        );
     }
 
 
@@ -376,6 +440,7 @@ public class AnalyticsDashboardController {
         setTotalsLabel(sinceDate, toDate);
         plotIncomeExpenseBarChart(sinceDate, toDate);
         plotPieCharts(sinceDate, toDate);
+        plotBalanceLineChart(sinceDate, toDate);
         setTopTransactionsLabel(sinceDate, toDate);
     }
 
