@@ -15,18 +15,10 @@
    <children>
       <ListView fx:id="transactionListView" layoutX="44.0" layoutY="102.0" prefHeight="480.0" prefWidth="450.0" />
       <Button layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#goBack" prefHeight="34.0" prefWidth="89.0" text="&lt; Dashboard" />
-      <Label layoutX="197.0" layoutY="17.0" text="Transaction Manager">
-         <font>
-            <Font size="24.0" />
-         </font>
-      </Label>
-      <Label layoutX="178.0" layoutY="82.0" text="Recently Added Transactions:">
-         <font>
-            <Font size="14.0" />
-         </font>
-      </Label>
-      <Label layoutX="530.0" layoutY="102.0" text="Add New Transaction:" />
-      <Label layoutX="530.0" layoutY="130.0" text="Amount:" />
+      <Label layoutX="197.0" layoutY="17.0" styleClass="title" text="Transaction Manager" />
+      <Label layoutX="178.0" layoutY="82.0" styleClass="subtitle" text="Recently Added Transactions:" />
+      <Label layoutX="530.0" layoutY="102.0" styleClass="subtitle" text="Add New Transaction:" />
+      <Label layoutX="530.0" layoutY="130.0" styleClass="content" text="Amount:" />
       <TextField fx:id="amountTextField" layoutX="580.0" layoutY="125.0" prefHeight="25.0" prefWidth="120.0" promptText="0.00" />
       <RadioButton fx:id="expenseRadioButton" layoutX="530.0" layoutY="165.0" mnemonicParsing="false" selected="true" text="Expense">
          <toggleGroup>
@@ -34,11 +26,11 @@
          </toggleGroup>
       </RadioButton>
       <RadioButton fx:id="incomeRadioButton" layoutX="610.0" layoutY="165.0" mnemonicParsing="false" text="Income" toggleGroup="$transactionTypeToggleGroup" />
-      <Label layoutX="530.0" layoutY="200.0" text="Type:" />
+      <Label layoutX="530.0" layoutY="200.0" styleClass="content" text="Type:" />
       <ComboBox fx:id="typeComboBox" layoutX="580.0" layoutY="195.0" prefHeight="25.0" prefWidth="200.0" />
-      <Label layoutX="530.0" layoutY="235.0" text="Category:" />
+      <Label layoutX="530.0" layoutY="235.0" styleClass="content" text="Category:" />
       <ComboBox fx:id="categoryComboBox" disable="true" layoutX="580.0" layoutY="230.0" prefHeight="25.0" prefWidth="200.0" />
-      <Label layoutX="530.0" layoutY="270.0" text="Date:" />
+      <Label layoutX="530.0" layoutY="270.0" styleClass="content" text="Date:" />
       <DatePicker fx:id="datePicker" layoutX="580.0" layoutY="265.0" prefHeight="25.0" prefWidth="200.0" />
       <Button layoutX="580.0" layoutY="315.0" mnemonicParsing="false" onAction="#addTransaction" prefHeight="34.0" prefWidth="120.0" text="Add Transaction" />
       <Button layoutX="580.0" layoutY="365.0" mnemonicParsing="false" onAction="#deleteTransaction" prefHeight="34.0" prefWidth="120.0" text="Delete Selected" />

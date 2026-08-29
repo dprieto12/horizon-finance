@@ -7,17 +7,9 @@
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.DashboardController">
    <children>
-      <Label fx:id="welcomeBackLabel" layoutX="189.0" layoutY="29.0" text="Welcome back, User!">
-         <font>
-            <Font size="24.0" />
-         </font>
-      </Label>
-      <Label fx:id="accountBalanceLabel" layoutX="218.0" layoutY="76.0" text="Account Balance: $xxx.xx">
-         <font>
-            <Font size="15.0" />
-         </font>
-      </Label>
-      <Label layoutX="279.0" layoutY="140.0" text="Actions" />
+      <Label fx:id="welcomeBackLabel" layoutX="189.0" layoutY="29.0" styleClass="title" text="Welcome back, User!" />
+      <Label fx:id="accountBalanceLabel" layoutX="218.0" layoutY="76.0" styleClass="subtitle" text="Account Balance: $xxx.xx" />
+      <Label layoutX="279.0" layoutY="140.0" styleClass="content" text="Actions" />
       <Button fx:id="transactionsButton" layoutX="92.0" layoutY="171.0" mnemonicParsing="false" onAction="#viewTransactions" prefHeight="206.0" prefWidth="173.0" text="Transactions" />
       <Button fx:id="analyticsButton" layoutX="331.0" layoutY="171.0" mnemonicParsing="false" onAction="#viewAnalytics" prefHeight="112.0" prefWidth="185.0" text="Analytics" />
       <Button fx:id="accountButton" layoutX="328.0" layoutY="315.0" mnemonicParsing="false" onAction="#viewAccount" prefHeight="59.0" prefWidth="192.0" text="Account" />

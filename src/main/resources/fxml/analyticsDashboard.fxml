@@ -15,23 +15,11 @@
             <HBox alignment="CENTER" prefHeight="51.0" prefWidth="586.0" spacing="60.0">
                <children>
                   <Button maxWidth="105.0" mnemonicParsing="false" onAction="#backToDashboard" prefHeight="25.0" prefWidth="61.0" text="&lt;" />
-                  <Label prefHeight="45.0" prefWidth="422.0" text="Spending Analytics">
-                     <font>
-                        <Font size="36.0" />
-                     </font>
-                  </Label>
+                  <Label prefHeight="45.0" prefWidth="422.0" styleClass="title" text="Spending Analytics" />
                </children>
             </HBox>
-            <Label fx:id="accountInfoLabel" text="(Account Info)" textFill="#0009ff">
-               <font>
-                  <Font size="18.0" />
-               </font>
-            </Label>
-            <Label text="Time Period:">
-               <font>
-                  <Font size="18.0" />
-               </font>
-            </Label>
+            <Label fx:id="accountInfoLabel" styleClass="subtitle" text="(Account Info)" textFill="#0009ff" />
+            <Label styleClass="subtitle" text="Time Period:" />
             <HBox alignment="CENTER" prefHeight="37.0" prefWidth="586.0" spacing="35.0">
                <children>
                   <Button mnemonicParsing="false" onAction="#getThisMonth" text="This Month" />
@@ -48,17 +36,9 @@
                   <Button mnemonicParsing="false" onAction="#customDate" prefHeight="25.0" prefWidth="47.0" text="Go &gt;" />
                </children>
             </HBox>
-            <Label fx:id="invalidDateLabel" alignment="CENTER" prefHeight="15.0" prefWidth="127.0" text="Dates are missing or invalid." textFill="RED" visible="false">
-               <font>
-                  <Font size="10.0" />
-               </font>
-            </Label>
-            <Label fx:id="summaryLabel" text="Summary - All Time:">
-               <font>
-                  <Font size="24.0" />
-               </font>
-            </Label>
-            <Label fx:id="totalsLabel" alignment="CENTER" prefHeight="17.0" prefWidth="593.0" text="Total Income: x              Total Expenses:           Net:              Avg/Month:" />
+            <Label fx:id="invalidDateLabel" alignment="CENTER" prefHeight="15.0" prefWidth="127.0" styleClass="content" text="Dates are missing or invalid." textFill="RED" visible="false" />
+            <Label fx:id="summaryLabel" styleClass="title" text="Summary - All Time:" />
+            <Label fx:id="totalsLabel" alignment="CENTER" prefHeight="17.0" prefWidth="593.0" styleClass="content" text="Total Income: x              Total Expenses:           Net:              Avg/Month:" />
          </children>
       </VBox>
    </content>

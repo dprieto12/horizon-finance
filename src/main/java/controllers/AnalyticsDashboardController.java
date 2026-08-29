@@ -266,7 +266,8 @@ public class AnalyticsDashboardController {
 
         if (filteredEntries.isEmpty()) {
             Label noDataLabel = new Label("No balance data available for this period");
-            noDataLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 14px;");
+            noDataLabel.getStyleClass().add("content");
+            noDataLabel.setStyle("-fx-text-fill: #888;");
             mainVBox.getChildren().add(noDataLabel);
             return;
         }
@@ -335,7 +336,8 @@ public class AnalyticsDashboardController {
 
         if (incomePieChartData.isEmpty()) {
             Label noDataLabel = new Label("No income data available for this period");
-            noDataLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 14px;");
+            noDataLabel.getStyleClass().add("content");
+            noDataLabel.setStyle("-fx-text-fill: #888;");
             mainVBox.getChildren().add(noDataLabel);
         } else {
             PieChart incomePieChart = new PieChart(incomePieChartData);
@@ -358,7 +360,8 @@ public class AnalyticsDashboardController {
 
         if (expensePieChartData.isEmpty()) {
             Label noDataLabel = new Label("No expense data available for this period");
-            noDataLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 14px;");
+            noDataLabel.getStyleClass().add("content");
+            noDataLabel.setStyle("-fx-text-fill: #888;");
             mainVBox.getChildren().add(noDataLabel);
         } else {
             PieChart expensePieChart = new PieChart(expensePieChartData);
@@ -379,7 +382,8 @@ public class AnalyticsDashboardController {
 
         if (purchasePieChartData.isEmpty()) {
             Label noDataLabel = new Label("No purchase data available for this period");
-            noDataLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 14px;");
+            noDataLabel.getStyleClass().add("content");
+            noDataLabel.setStyle("-fx-text-fill: #888;");
             mainVBox.getChildren().add(noDataLabel);
         } else {
             PieChart purchasePieChart = new PieChart(purchasePieChartData);
@@ -416,7 +420,7 @@ public class AnalyticsDashboardController {
         removeExistingTopTransactionsLabel();
 
         topTransactionsLabel = new Label();
-        topTransactionsLabel.setFont(new Font(14));
+        topTransactionsLabel.getStyleClass().add("content");
 
         ObservableList<Transaction> topFiveList = DatabaseManager.getInstance().getTopTransactionsByDateRange(
                 currentAccount.getAccountID(), sinceDate, toDate, 5);

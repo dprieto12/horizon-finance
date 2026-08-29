@@ -34,6 +34,7 @@ public class SceneManager {
         // Load the passed FXML file and show it
         Parent root = FXMLLoader.load(SceneManager.class.getResource(FXMLPath));
         Scene newScene = new Scene(root);
+        newScene.getStylesheets().add(SceneManager.class.getResource("/styling/styles.css").toExternalForm());
         stage.setScene(newScene);
         stage.show();
 

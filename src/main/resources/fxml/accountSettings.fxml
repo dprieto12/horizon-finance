@@ -8,32 +8,16 @@
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AccountSettingsController">
    <children>
-      <Label layoutX="228.0" layoutY="26.0" text="Your Account">
-         <font>
-            <Font size="24.0" />
-         </font>
-      </Label>
-      <Label layoutX="245.0" layoutY="109.0" text="Edit Account Info:" underline="true">
-         <font>
-            <Font size="14.0" />
-         </font>
-      </Label>
-      <Label fx:id="currentBalanceLabel" layoutX="226.0" layoutY="72.0" text="Current Balance: $xxx.xx">
-         <font>
-            <Font size="14.0" />
-         </font>
-      </Label>
-      <Label layoutX="172.0" layoutY="141.0" text="Account Name:" />
+      <Label layoutX="228.0" layoutY="26.0" styleClass="title" text="Your Account" />
+      <Label layoutX="245.0" layoutY="109.0" styleClass="subtitle" text="Edit Account Info:" underline="true" />
+      <Label fx:id="currentBalanceLabel" layoutX="226.0" layoutY="72.0" styleClass="subtitle" text="Current Balance: $xxx.xx" />
+      <Label layoutX="172.0" layoutY="141.0" styleClass="content" text="Account Name:" />
       <TextField fx:id="accountNameTextField" layoutX="289.0" layoutY="137.0" />
-      <Label layoutX="172.0" layoutY="191.0" text="User First Name:" />
+      <Label layoutX="172.0" layoutY="191.0" styleClass="content" text="User First Name:" />
       <TextField fx:id="firstNameTextField" layoutX="289.0" layoutY="187.0" />
-      <Label layoutX="172.0" layoutY="234.0" text="User Last Name:" />
+      <Label layoutX="172.0" layoutY="234.0" styleClass="content" text="User Last Name:" />
       <TextField fx:id="lastNameTextField" layoutX="289.0" layoutY="230.0" />
-      <Label layoutX="281.0" layoutY="333.0" text="Other:" underline="true">
-         <font>
-            <Font size="14.0" />
-         </font>
-      </Label>
+      <Label layoutX="281.0" layoutY="333.0" styleClass="subtitle" text="Other:" underline="true" />
       <Button fx:id="updateAccountButton" layoutX="249.0" layoutY="268.0" mnemonicParsing="false" onAction="#updateAccount" text="Update Account" />
       <Button fx:id="deleteAccountButton" layoutX="251.0" layoutY="360.0" mnemonicParsing="false" onAction="#deleteAccount" text="Delete Account" textFill="#c93838" />
       <Label fx:id="fieldsMissingLabel" layoutX="236.0" layoutY="302.0" text="Some fields are missing." textFill="RED" visible="false" />

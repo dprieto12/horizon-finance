@@ -8,20 +8,16 @@
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.CreateAccountController">
    <children>
-      <Label layoutX="98.0" layoutY="34.0" text="To create a new account, enter the following fields:">
-         <font>
-            <Font size="18.0" />
-         </font>
-      </Label>
+      <Label layoutX="98.0" layoutY="34.0" styleClass="subtitle" text="To create a new account, enter the following fields:" />
       <TextField fx:id="firstNameTextField" layoutX="300.0" layoutY="112.0" promptText="&quot;John&quot;" />
       <TextField fx:id="lastNameTextField" layoutX="300.0" layoutY="148.0" promptText="&quot;Doe&quot;" />
       <TextField fx:id="accountNameTextField" layoutX="300.0" layoutY="200.0" promptText="&quot;Savings&quot;" />
       <TextField fx:id="dollarTextField" layoutX="300.0" layoutY="256.0" prefHeight="25.0" prefWidth="60.0" promptText="123" />
       <Button fx:id="createAccountButton" layoutX="252.0" layoutY="320.0" mnemonicParsing="false" onAction="#createNewAccount" text="Create account" />
-      <Label layoutX="185.0" layoutY="116.0" text="First Name:" />
-      <Label layoutX="185.0" layoutY="152.0" text="Last Name:" />
-      <Label layoutX="185.0" layoutY="200.0" text="Account Name:" />
-      <Label layoutX="185.0" layoutY="260.0" text="Balance:" />
+      <Label layoutX="185.0" layoutY="116.0" styleClass="content" text="First Name:" />
+      <Label layoutX="185.0" layoutY="152.0" styleClass="content" text="Last Name:" />
+      <Label layoutX="185.0" layoutY="200.0" styleClass="content" text="Account Name:" />
+      <Label layoutX="185.0" layoutY="260.0" styleClass="content" text="Balance:" />
       <Label layoutX="293.0" layoutY="260.0" text="\$" />
       <TextField fx:id="centTextField" layoutX="367.0" layoutY="256.0" prefHeight="25.0" prefWidth="37.0" promptText="45" />
       <Label layoutX="362.0" layoutY="265.0" text="." />

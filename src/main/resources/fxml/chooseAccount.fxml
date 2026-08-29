@@ -8,15 +8,7 @@
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ChooseAccountController">
    <children>
       <VBox fx:id="accountContainer" layoutX="142.0" layoutY="101.0" prefHeight="294.0" prefWidth="316.0" />
-      <Label layoutX="172.0" layoutY="14.0" text="Horizon Finance">
-         <font>
-            <Font size="36.0" />
-         </font>
-      </Label>
-      <Label layoutX="191.0" layoutY="67.0" text="Select or create an account:">
-         <font>
-            <Font size="18.0" />
-         </font>
-      </Label>
+      <Label layoutX="172.0" layoutY="14.0" styleClass="title" text="Horizon Finance" />
+      <Label layoutX="191.0" layoutY="67.0" styleClass="subtitle" text="Select or create an account:" />
    </children>
 </AnchorPane>
