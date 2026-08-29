@@ -53,11 +53,6 @@ public class SceneManager {
         Parent root = loader.load();
         Object controller = loader.getController();
 
-        // If the controller implements DataReceiver, pass the controllerData to it
-        if (controller instanceof DataReceiver) {
-            ((DataReceiver) controller).receiveData(controllerData);
-        }
-
         // Then, set and show the new scene
         Scene newScene = new Scene(root);
         stage.setScene(newScene);
