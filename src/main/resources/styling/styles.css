@@ -1,25 +1,37 @@
-/* Load Inter font family */
-@font-face {
-    -fx-font-family: "Inter";
-    src: url("../fonts/Inter/static/Inter_18pt-Regular.ttf");
-}
+/*
+ * Horizon Finance - global stylesheet.
+ *
+ * SceneManager.switchScene() attaches this sheet to every scene, so it is the single place for styling that
+ * applies application-wide. It layers on top of the AtlantaFX Nord Dark user agent stylesheet set in Main,
+ * and therefore only needs to declare what differs from that theme.
+ *
+ * Fonts: JavaFX CSS has no working @font-face rule, so the Inter faces named below cannot be loaded from
+ * here. Main.loadFonts() registers them at startup. The family name is "Inter 18pt", not "Inter" -- that is
+ * the family the Inter 4.x static files declare internally. Plain "Inter" is kept next in the stack so a
+ * system-wide Inter install is still picked up if the bundled files are ever replaced.
+ *
+ * Colors: prefer AtlantaFX's own looked-up variables (-color-bg-default, -color-fg-muted, -color-danger-fg,
+ * -color-border-default, and so on) over literal hex values, so styling follows the active theme instead of
+ * duplicating its palette.
+ */
 
-@font-face {
-    -fx-font-family: "Inter Bold";
-    src: url("../fonts/Inter/static/Inter_18pt-Bold.ttf");
-}
 
-@font-face {
-    -fx-font-family: "Inter Italic";
-    src: url("../fonts/Inter/static/Inter_18pt-Italic.ttf");
-}
+/* Base ------------------------------------------------------------------------------------------------- */
 
-/* Global font application using Inter with fallbacks */
+/* Font properties are inherited, so setting the family here covers every control in the scene graph. */
 .root {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-family: "Inter 18pt", "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
-/* Font size classes */
+
+/* Typography ------------------------------------------------------------------------------------------- */
+
+/*
+ * Sizes are deliberately unchanged from the previous sheet. The scenes still position their text by absolute
+ * coordinates, so resizing type would shift and overlap existing layouts. Revisit this scale once the FXML
+ * files move to layout containers.
+ */
+
 .title {
     -fx-font-size: 32px;
     -fx-font-weight: bold;
@@ -33,94 +45,10 @@
     -fx-font-size: 14px;
 }
 
-/* Apply to all text-based controls */
-.label {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
 
-.button {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-    -fx-font-size: 14px;
-}
+/* Theme hooks ------------------------------------------------------------------------------------------ */
 
-.text-field {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-.text-area {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-.combo-box {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-.date-picker {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-.check-box {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-.radio-button {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-.hyperlink {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-.list-view {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-.table-view {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-.tree-view {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-.tooltip {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-.menu-bar {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-.menu-item {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-.context-menu {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-/* Chart text */
-.chart {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-.chart-title {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-.chart-legend {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-.axis {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-.axis-tick-mark {
-    -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-/* Dark background for AtlantaFX NordDark theme compatibility */
+/* Applied by analyticsDashboard.fxml. Tracks the active theme rather than hardcoding Nord's #2E3440. */
 .dark-background {
-    -fx-background-color: #2E3440;
+    -fx-background-color: -color-bg-default;
 }

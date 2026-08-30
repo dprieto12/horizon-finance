@@ -17,12 +17,27 @@ import java.io.IOException;
 public class SceneManager {
     private static Stage stage;
 
+    /** Size of the window when the application first opens, in pixels. */
+    private static final double DEFAULT_WIDTH = 1100;
+    private static final double DEFAULT_HEIGHT = 700;
+
     /**
-     * This method sets the static stage reference to the passed stage parameter.
+     * Smallest size the window can be resized to, in pixels. Chosen to clear the widest and tallest scene
+     * content in the application (the 900x600 layout in transactionOptions.fxml) with room left over for the
+     * window frame, so that no scene clips at the minimum size.
+     */
+    private static final double MIN_WIDTH = 940;
+    private static final double MIN_HEIGHT = 680;
+
+    /**
+     * This method sets the static stage reference to the passed stage parameter, and applies the window size
+     * limits that every scene is laid out against.
      * @param newStage Stage object to set as the static stage reference
      */
     public static void setStage(Stage newStage) {
         SceneManager.stage = newStage;
+        stage.setMinWidth(MIN_WIDTH);
+        stage.setMinHeight(MIN_HEIGHT);
     }
 
     /**
@@ -33,7 +48,15 @@ public class SceneManager {
     public static void switchScene(String FXMLPath) throws IOException {
         // Load the passed FXML file and show it
         Parent root = FXMLLoader.load(SceneManager.class.getResource(FXMLPath));
-        Scene newScene = new Scene(root);
+
+        // Carry the current window size into the new scene, falling back to the default size on the first
+        // load. Building the scene without explicit dimensions would instead size it from the loaded FXML's
+        // own preferred size, resizing the window on every navigation and discarding any resize by the user.
+        Scene currentScene = stage.getScene();
+        double width = (currentScene == null) ? DEFAULT_WIDTH : currentScene.getWidth();
+        double height = (currentScene == null) ? DEFAULT_HEIGHT : currentScene.getHeight();
+
+        Scene newScene = new Scene(root, width, height);
         newScene.getStylesheets().add(SceneManager.class.getResource("/styling/styles.css").toExternalForm());
         stage.setScene(newScene);
         stage.show();
