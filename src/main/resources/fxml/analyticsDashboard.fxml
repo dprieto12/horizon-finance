@@ -4,42 +4,64 @@
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<ScrollPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="600.0" styleClass="dark-background" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AnalyticsDashboardController">
-   <content>
-      <VBox fx:id="mainVBox" alignment="TOP_CENTER" spacing="10.0" styleClass="dark-background">
+<BorderPane prefHeight="700.0" prefWidth="1100.0" styleClass="page" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AnalyticsDashboardController">
+   <top>
+      <VBox styleClass="page-top" BorderPane.alignment="CENTER">
          <children>
-            <HBox alignment="CENTER" prefHeight="51.0" prefWidth="586.0" spacing="60.0">
+            <HBox styleClass="page-header">
                <children>
-                  <Button maxWidth="105.0" mnemonicParsing="false" onAction="#backToDashboard" prefHeight="25.0" prefWidth="61.0" text="&lt;" />
-                  <Label prefHeight="45.0" prefWidth="422.0" styleClass="title" text="Spending Analytics" />
+                  <Button mnemonicParsing="false" onAction="#backToDashboard" styleClass="back-button" text="&lt; Dashboard" />
+                  <Label styleClass="page-title" text="Spending Analytics" />
                </children>
             </HBox>
-            <Label fx:id="accountInfoLabel" styleClass="subtitle" text="(Account Info)" textFill="#0009ff" />
-            <Label styleClass="subtitle" text="Time Period:" />
-            <HBox alignment="CENTER" prefHeight="37.0" prefWidth="586.0" spacing="35.0">
+
+            <!-- Filter controls sit outside mainVBox so they stay put while the charts below scroll. -->
+            <VBox styleClass="panel">
                <children>
-                  <Button mnemonicParsing="false" onAction="#getThisMonth" text="This Month" />
-                  <Button mnemonicParsing="false" onAction="#getLast3Months" text="Last 3 Months" />
-                  <Button mnemonicParsing="false" onAction="#getLast6Months" text="Last 6 Months" />
-                  <Button mnemonicParsing="false" onAction="#getThisYear" text="This Year" />
-                  <Button mnemonicParsing="false" onAction="#getAllTime" text="All Time" />
+                  <Label fx:id="accountInfoLabel" styleClass="section-title, accent-fg" text="(Account Info)" />
+                  <Label styleClass="field-label" text="Time Period:" />
+
+                  <FlowPane styleClass="toolbar">
+                     <children>
+                        <Button mnemonicParsing="false" onAction="#getThisMonth" text="This Month" />
+                        <Button mnemonicParsing="false" onAction="#getLast3Months" text="Last 3 Months" />
+                        <Button mnemonicParsing="false" onAction="#getLast6Months" text="Last 6 Months" />
+                        <Button mnemonicParsing="false" onAction="#getThisYear" text="This Year" />
+                        <Button mnemonicParsing="false" onAction="#getAllTime" text="All Time" />
+                     </children>
+                  </FlowPane>
+
+                  <HBox alignment="CENTER_LEFT" spacing="8.0">
+                     <children>
+                        <DatePicker fx:id="fromDatePicker" promptText="From" />
+                        <DatePicker fx:id="toDatePicker" promptText="To" />
+                        <Button mnemonicParsing="false" onAction="#customDate" text="Go &gt;" />
+                     </children>
+                  </HBox>
+
+                  <Label fx:id="invalidDateLabel" styleClass="error-label" text="Dates are missing or invalid." visible="false" />
                </children>
-            </HBox>
-            <HBox alignment="BOTTOM_CENTER" prefHeight="42.0" prefWidth="586.0" spacing="10.0">
-               <children>
-                  <DatePicker fx:id="fromDatePicker" promptText="From" />
-                  <DatePicker fx:id="toDatePicker" promptText="To" />
-                  <Button mnemonicParsing="false" onAction="#customDate" prefHeight="25.0" prefWidth="47.0" text="Go &gt;" />
-               </children>
-            </HBox>
-            <Label fx:id="invalidDateLabel" alignment="CENTER" prefHeight="15.0" prefWidth="127.0" styleClass="content" text="Dates are missing or invalid." textFill="RED" visible="false" />
-            <Label fx:id="summaryLabel" styleClass="title" text="Summary - All Time:" />
-            <Label fx:id="totalsLabel" alignment="CENTER" prefHeight="17.0" prefWidth="593.0" styleClass="content" text="Total Income: x              Total Expenses:           Net:              Avg/Month:" />
+            </VBox>
          </children>
       </VBox>
-   </content>
-</ScrollPane>
+   </top>
+   <center>
+      <ScrollPane fitToWidth="true" styleClass="plain" BorderPane.alignment="CENTER">
+         <content>
+            <!-- AnalyticsDashboardController appends its charts and no-data labels to the end of this VBox,
+                 so nothing static may be added below totalsLabel. -->
+            <VBox fx:id="mainVBox" spacing="16.0">
+               <children>
+                  <Label fx:id="summaryLabel" styleClass="section-title" text="Summary - All Time:" />
+                  <Label fx:id="totalsLabel" alignment="CENTER" maxWidth="Infinity" text="Total Income: x              Total Expenses:           Net:              Avg/Month:" wrapText="true" />
+               </children>
+            </VBox>
+         </content>
+      </ScrollPane>
+   </center>
+</BorderPane>

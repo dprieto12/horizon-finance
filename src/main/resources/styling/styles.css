@@ -10,45 +10,247 @@
  * the family the Inter 4.x static files declare internally. Plain "Inter" is kept next in the stack so a
  * system-wide Inter install is still picked up if the bundled files are ever replaced.
  *
- * Colors: prefer AtlantaFX's own looked-up variables (-color-bg-default, -color-fg-muted, -color-danger-fg,
- * -color-border-default, and so on) over literal hex values, so styling follows the active theme instead of
- * duplicating its palette.
+ * Colors: never write a literal hex value below. Every color resolves to an AtlantaFX theme variable
+ * (-color-bg-default, -color-fg-muted, -color-danger-fg, -color-chart-1, ...) so that swapping Nord Dark for
+ * any other AtlantaFX theme restyles the whole application from Main's one-line theme call.
+ *
+ * Reuse before adding: AtlantaFX already provides typography (.title-1 through .title-4, .text-caption,
+ * .text-small), emphasis (.text-muted, .text-subtle, .text-bold, .text-italic), intent (.accent, .success,
+ * .danger, .warning), shadows (.elevated-1 through .elevated-4) and button variants (.flat, .button-outlined,
+ * .button-icon). Prefer those in FXML. The classes here cover only what AtlantaFX has no equivalent for.
+ *
+ * Scale: JavaFX CSS supports custom variables for colors only -- there is no var() for numbers -- so the
+ * spacing and radius scales below are conventions applied through classes, not variables. Spacing steps are
+ * 4 / 8 / 12 / 16 / 24 / 32px and corner radii are 6px (controls) and 10px (surfaces). Stick to those steps.
  */
 
 
-/* Base ------------------------------------------------------------------------------------------------- */
+/* Tokens ----------------------------------------------------------------------------------------------- */
 
-/* Font properties are inherited, so setting the family here covers every control in the scene graph. */
+/*
+ * Semantic aliases for colors that carry meaning specific to this application, so that scene styling can say
+ * what it means rather than which theme slot it borrows. Deliberately thin: colors that AtlantaFX already
+ * names well are referenced directly instead of being aliased again.
+ */
 .root {
     -fx-font-family: "Inter 18pt", "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+
+    /* Money direction. Income reads positive, expense reads negative, everywhere in the application. */
+    -horizon-income: -color-success-fg;
+    -horizon-expense: -color-danger-fg;
+
+    /* Raised surfaces: cards, tiles and panels that sit on top of the window background. */
+    -horizon-surface: -color-bg-subtle;
+    -horizon-surface-border: -color-border-muted;
+
+    /* Interactive emphasis, used for hover and focus affordances on custom surfaces. */
+    -horizon-highlight: -color-accent-emphasis;
 }
 
 
 /* Typography ------------------------------------------------------------------------------------------- */
 
 /*
- * Sizes are deliberately unchanged from the previous sheet. The scenes still position their text by absolute
- * coordinates, so resizing type would shift and overlap existing layouts. Revisit this scale once the FXML
- * files move to layout containers.
+ * Sizes are pinned in px rather than the em scale AtlantaFX uses. The scenes still position their text by
+ * absolute coordinates, so type that resizes would shift and overlap existing layouts. Once the FXML files
+ * move to layout containers in the next step, these can be re-pointed at .title-1 / .title-3 / .text-caption
+ * and the fixed sizes dropped.
  */
 
-.title {
+.page-title {
     -fx-font-size: 32px;
     -fx-font-weight: bold;
 }
 
-.subtitle {
+.page-subtitle {
     -fx-font-size: 18px;
+    -fx-text-fill: -color-fg-muted;
 }
 
+.section-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.field-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+/*
+ * Text color for labels. AtlantaFX's own .text-muted, .text-subtle and .text.accent set -fx-fill, which only
+ * affects Text nodes and silently does nothing on a Label, so a label-safe equivalent is needed. Its sizing
+ * and weight classes (.title-1 through .title-4, .text-small, .text-bold, .text-italic) do work on labels and
+ * should be used directly rather than duplicated here.
+ *
+ * Carries no size of its own, so it composes with a sizing class: styleClass="section-title, accent-fg".
+ */
+.accent-fg {
+    -fx-text-fill: -color-accent-fg;
+}
+
+
+/* Layout primitives ----------------------------------------------------------------------------------- */
+
+/* Outermost container of a scene: supplies the window margin every scene should share. */
+.page {
+    -fx-padding: 24px;
+    -fx-spacing: 16px;
+    -fx-background-color: -color-bg-default;
+}
+
+/* Header row holding a back button and the page title. */
+.page-header {
+    -fx-spacing: 16px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 0 8px 0;
+}
+
+/* Fixed region above a scrolling body: header plus any filter controls that should not scroll away. */
+.page-top {
+    -fx-spacing: 16px;
+    -fx-padding: 0 0 16px 0;
+}
+
+/*
+ * Grouped surface for related content. Applied to a VBox or HBox, -fx-spacing sets the gap between rows.
+ * Named .panel rather than .card because .card belongs to AtlantaFX's Card control: its rules are all
+ * .card > .container descendants that would not match a plain VBox, but the name is theirs, not ours.
+ */
+.panel {
+    -fx-background-color: -horizon-surface;
+    -fx-background-radius: 10px;
+    -fx-border-color: -horizon-surface-border;
+    -fx-border-width: 1px;
+    -fx-border-radius: 10px;
+    -fx-padding: 20px;
+    -fx-spacing: 12px;
+}
+
+.panel > .section-title {
+    -fx-padding: 0 0 4px 0;
+}
+
+/* Label-and-input form layout. Applied to a GridPane; -fx-hgap separates label from field. */
+.form-grid {
+    -fx-hgap: 16px;
+    -fx-vgap: 12px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/*
+ * Vertical list of full-width buttons, used where a scene offers a set of equal choices. Reaches buttons that
+ * a controller creates at runtime, which is why the width is set here rather than in FXML: the account
+ * buttons in chooseAccount are built by ChooseAccountController and have no FXML element to carry it.
+ */
+.button-stack > .button {
+    -fx-max-width: infinity;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 10px 14px;
+}
+
+/* Row of related buttons or inputs. A FlowPane, so a narrow window wraps the row instead of clipping it. */
+.toolbar {
+    -fx-hgap: 8px;
+    -fx-vgap: 8px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/*
+ * A ScrollPane present only to handle overflow, not as a surface of its own: no frame, no background of its
+ * own, so the page behind it shows through. AtlantaFX's .edge-to-edge covers list, table, tree and text
+ * inputs but not ScrollPane, hence this rule.
+ */
+.scroll-pane.plain,
+.scroll-pane.plain > .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane.plain {
+    -fx-padding: 0;
+    -fx-border-width: 0;
+}
+
+
+/* Components ------------------------------------------------------------------------------------------- */
+
+/*
+ * Large button used for primary navigation choices, such as the dashboard's action buttons. Styled as a
+ * surface rather than a control so a row of them reads as a set of panels. Author styles outrank the theme's
+ * .button rules, so the hover and pressed states have to be restated here.
+ */
+.button.action-tile {
+    -fx-background-color: -horizon-surface;
+    -fx-background-radius: 10px;
+    -fx-border-color: -horizon-surface-border;
+    -fx-border-width: 1px;
+    -fx-border-radius: 10px;
+    -fx-padding: 20px;
+    -fx-min-height: 150px;
+    -fx-font-size: 16px;
+    -fx-alignment: CENTER;
+    -fx-content-display: TOP;
+    -fx-graphic-text-gap: 10px;
+    -fx-cursor: hand;
+}
+
+.button.action-tile:hover {
+    -fx-background-color: -color-bg-inset;
+    -fx-border-color: -horizon-highlight;
+}
+
+.button.action-tile:pressed {
+    -fx-background-color: -color-bg-subtle;
+    -fx-border-color: -horizon-highlight;
+}
+
+/* Quiet back-navigation button, so returning to the previous scene does not compete with page actions. */
+.button.back-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: -color-fg-muted;
+    -fx-padding: 6px 12px;
+    -fx-cursor: hand;
+}
+
+.button.back-button:hover {
+    -fx-background-color: -color-bg-subtle;
+    -fx-text-fill: -color-fg-default;
+}
+
+/*
+ * Monetary direction, for any label showing a signed amount. The analytics summary cannot use these yet:
+ * AnalyticsDashboardController builds its totals as one preformatted string in a single label, so there is
+ * no per-figure node to color. A .stat-tile component was dropped for the same reason -- there is no markup
+ * that needs it until those totals become separate labels.
+ */
+.amount-income {
+    -fx-text-fill: -horizon-income;
+}
+
+.amount-expense {
+    -fx-text-fill: -horizon-expense;
+}
+
+/*
+ * Validation message shown beneath a form, replacing the inline textFill="RED" the scenes used to set, which
+ * overrode stylesheets and could not follow the theme.
+ */
+.error-label {
+    -fx-text-fill: -color-danger-fg;
+    -fx-font-size: 13px;
+    -fx-padding: 4px 0 0 0;
+}
+
+
+/* Set from Java ---------------------------------------------------------------------------------------- */
+
+/*
+ * No FXML references this. AnalyticsDashboardController adds it in code to the labels it creates at runtime
+ * (getStyleClass().add("content")), so removing it would silently unstyle those. The .title, .subtitle and
+ * .dark-background classes that used to sit here are gone: every scene now uses .page-title, .section-title
+ * and .page instead.
+ */
 .content {
     -fx-font-size: 14px;
-}
-
-
-/* Theme hooks ------------------------------------------------------------------------------------------ */
-
-/* Applied by analyticsDashboard.fxml. Tracks the active theme rather than hardcoding Nord's #2E3440. */
-.dark-background {
-    -fx-background-color: -color-bg-default;
 }

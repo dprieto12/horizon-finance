@@ -8,32 +8,80 @@
 <?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleGroup?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.TransactionOptionsController">
-   <children>
-      <ListView fx:id="transactionListView" layoutX="43.0" layoutY="109.0" prefHeight="480.0" prefWidth="450.0" />
-      <Button layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#goBack" prefHeight="34.0" prefWidth="89.0" text="&lt; Dashboard" />
-      <Label layoutX="197.0" layoutY="17.0" styleClass="title" text="Transaction Manager" />
-      <Label layoutX="178.0" layoutY="65.0" styleClass="subtitle" text="Transactions:" />
-      <ComboBox fx:id="viewModeComboBox" layoutX="303.0" layoutY="60.0" prefHeight="25.0" prefWidth="187.0" />
-      <Label layoutX="530.0" layoutY="100.0" styleClass="subtitle" text="Add New Transaction:" />
-      <Label layoutX="530.0" layoutY="135.0" styleClass="content" text="Amount:" />
-      <TextField fx:id="amountTextField" layoutX="600.0" layoutY="130.0" prefHeight="22.0" prefWidth="100.0" promptText="0.00" />
-      <RadioButton fx:id="expenseRadioButton" layoutX="530.0" layoutY="170.0" mnemonicParsing="false" selected="true" text="Expense">
-         <toggleGroup>
-            <ToggleGroup fx:id="transactionTypeToggleGroup" />
-         </toggleGroup>
-      </RadioButton>
-      <RadioButton fx:id="incomeRadioButton" layoutX="610.0" layoutY="170.0" mnemonicParsing="false" text="Income" toggleGroup="$transactionTypeToggleGroup" />
-      <Label layoutX="530.0" layoutY="205.0" styleClass="content" text="Type:" />
-      <ComboBox fx:id="typeComboBox" layoutX="600.0" layoutY="200.0" prefHeight="22.0" prefWidth="160.0" />
-      <Label layoutX="530.0" layoutY="240.0" styleClass="content" text="Category:" />
-      <ComboBox fx:id="categoryComboBox" disable="true" layoutX="600.0" layoutY="235.0" prefHeight="22.0" prefWidth="160.0" />
-      <Label layoutX="530.0" layoutY="275.0" styleClass="content" text="Date:" />
-      <DatePicker fx:id="datePicker" layoutX="600.0" layoutY="270.0" prefHeight="22.0" prefWidth="160.0" />
-      <Button layoutX="600.0" layoutY="320.0" mnemonicParsing="false" onAction="#addTransaction" prefHeight="34.0" prefWidth="150.0" text="Add Transaction" />
-      <Button layoutX="600.0" layoutY="370.0" mnemonicParsing="false" onAction="#deleteTransaction" prefHeight="34.0" prefWidth="150.0" text="Delete Selected" />
-      <Label fx:id="errorMessageLabel" layoutX="530.0" layoutY="420.0" textFill="RED" visible="false" />
-   </children>
-</AnchorPane>
+<BorderPane prefHeight="700.0" prefWidth="1100.0" styleClass="page" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.TransactionOptionsController">
+   <top>
+      <HBox styleClass="page-header" BorderPane.alignment="CENTER">
+         <children>
+            <Button mnemonicParsing="false" onAction="#goBack" styleClass="back-button" text="&lt; Dashboard" />
+            <Label styleClass="page-title" text="Transaction Manager" />
+         </children>
+      </HBox>
+   </top>
+   <center>
+      <HBox spacing="20.0" BorderPane.alignment="CENTER">
+         <children>
+
+            <!-- Left pane: the list takes all leftover width and height. -->
+            <VBox spacing="12.0" HBox.hgrow="ALWAYS">
+               <children>
+                  <HBox alignment="CENTER_LEFT" spacing="12.0">
+                     <children>
+                        <Label styleClass="section-title" text="Transactions:" />
+                        <ComboBox fx:id="viewModeComboBox" prefWidth="200.0" />
+                     </children>
+                  </HBox>
+                  <ListView fx:id="transactionListView" styleClass="striped" VBox.vgrow="ALWAYS" />
+               </children>
+            </VBox>
+
+            <!-- Right pane: fixed-width form, so the list absorbs window resizing rather than the inputs. -->
+            <VBox maxWidth="360.0" minWidth="360.0" prefWidth="360.0" styleClass="panel">
+               <children>
+                  <Label styleClass="section-title" text="Add New Transaction" />
+
+                  <GridPane styleClass="form-grid">
+                     <columnConstraints>
+                        <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="-Infinity" />
+                        <ColumnConstraints hgrow="ALWAYS" />
+                     </columnConstraints>
+                     <children>
+                        <Label styleClass="field-label" text="Amount:" />
+                        <TextField fx:id="amountTextField" maxWidth="Infinity" promptText="0.00" GridPane.columnIndex="1" />
+
+                        <HBox alignment="CENTER_LEFT" spacing="16.0" GridPane.columnSpan="2" GridPane.rowIndex="1">
+                           <children>
+                              <RadioButton fx:id="expenseRadioButton" mnemonicParsing="false" selected="true" text="Expense">
+                                 <toggleGroup>
+                                    <ToggleGroup fx:id="transactionTypeToggleGroup" />
+                                 </toggleGroup>
+                              </RadioButton>
+                              <RadioButton fx:id="incomeRadioButton" mnemonicParsing="false" text="Income" toggleGroup="$transactionTypeToggleGroup" />
+                           </children>
+                        </HBox>
+
+                        <Label styleClass="field-label" text="Type:" GridPane.rowIndex="2" />
+                        <ComboBox fx:id="typeComboBox" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                        <Label styleClass="field-label" text="Category:" GridPane.rowIndex="3" />
+                        <ComboBox fx:id="categoryComboBox" disable="true" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                        <Label styleClass="field-label" text="Date:" GridPane.rowIndex="4" />
+                        <DatePicker fx:id="datePicker" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                     </children>
+                  </GridPane>
+
+                  <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#addTransaction" styleClass="accent" text="Add Transaction" />
+                  <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#deleteTransaction" styleClass="danger" text="Delete Selected" />
+                  <Label fx:id="errorMessageLabel" styleClass="error-label" visible="false" />
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+   </center>
+</BorderPane>

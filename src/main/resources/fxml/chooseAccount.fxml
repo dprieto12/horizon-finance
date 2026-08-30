@@ -1,14 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ChooseAccountController">
-   <children>
-      <VBox fx:id="accountContainer" layoutX="142.0" layoutY="101.0" prefHeight="294.0" prefWidth="316.0" />
-      <Label layoutX="172.0" layoutY="14.0" styleClass="title" text="Horizon Finance" />
-      <Label layoutX="191.0" layoutY="67.0" styleClass="subtitle" text="Select or create an account:" />
-   </children>
-</AnchorPane>
+<BorderPane prefHeight="700.0" prefWidth="1100.0" styleClass="page" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ChooseAccountController">
+   <center>
+      <!-- Scrolls only when the account list outgrows the window; .plain keeps it visually invisible. -->
+      <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" styleClass="plain" BorderPane.alignment="CENTER">
+         <content>
+            <VBox alignment="CENTER" spacing="24.0">
+               <children>
+                  <VBox alignment="CENTER" maxWidth="460.0" spacing="4.0">
+                     <children>
+                        <Label styleClass="page-title" text="Horizon Finance" />
+                        <Label styleClass="page-subtitle" text="Select or create an account:" />
+                     </children>
+                  </VBox>
+
+                  <!-- ChooseAccountController fills this with one button per account, plus a create button.
+                       The .button-stack rule in styles.css is what sizes those runtime-created buttons. -->
+                  <VBox fx:id="accountContainer" maxWidth="460.0" styleClass="panel, button-stack" />
+               </children>
+            </VBox>
+         </content>
+      </ScrollPane>
+   </center>
+</BorderPane>

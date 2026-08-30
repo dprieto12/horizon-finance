@@ -3,24 +3,67 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.CreateAccountController">
-   <children>
-      <Label layoutX="166.0" layoutY="36.0" styleClass="subtitle" text="To create a new account, enter the following fields:" />
-      <TextField fx:id="firstNameTextField" layoutX="300.0" layoutY="112.0" promptText="&quot;John&quot;" />
-      <TextField fx:id="lastNameTextField" layoutX="300.0" layoutY="148.0" promptText="&quot;Doe&quot;" />
-      <TextField fx:id="accountNameTextField" layoutX="300.0" layoutY="200.0" promptText="&quot;Savings&quot;" />
-      <TextField fx:id="dollarTextField" layoutX="300.0" layoutY="256.0" prefHeight="25.0" prefWidth="60.0" promptText="123" />
-      <Button fx:id="createAccountButton" layoutX="252.0" layoutY="320.0" mnemonicParsing="false" onAction="#createNewAccount" text="Create account" />
-      <Label layoutX="185.0" layoutY="116.0" styleClass="content" text="First Name:" />
-      <Label layoutX="185.0" layoutY="152.0" styleClass="content" text="Last Name:" />
-      <Label layoutX="185.0" layoutY="200.0" styleClass="content" text="Account Name:" />
-      <Label layoutX="185.0" layoutY="260.0" styleClass="content" text="Balance:" />
-      <Label layoutX="293.0" layoutY="260.0" text="\$" />
-      <TextField fx:id="centTextField" layoutX="367.0" layoutY="256.0" prefHeight="25.0" prefWidth="37.0" promptText="45" />
-      <Label layoutX="362.0" layoutY="265.0" text="." />
-      <Label fx:id="errorMessageLabel" layoutX="233.0" layoutY="351.0" text="Some fields are not filled." textFill="RED" visible="false" />
-      <Button layoutX="14.0" layoutY="24.0" mnemonicParsing="false" onAction="#goBack" prefHeight="54.0" prefWidth="135.0" text="&lt; Back to Accounts" />
-   </children>
-</AnchorPane>
+<BorderPane prefHeight="700.0" prefWidth="1100.0" styleClass="page" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.CreateAccountController">
+   <top>
+      <HBox styleClass="page-header" BorderPane.alignment="CENTER">
+         <children>
+            <Button mnemonicParsing="false" onAction="#goBack" styleClass="back-button" text="&lt; Back to Accounts" />
+         </children>
+      </HBox>
+   </top>
+   <center>
+      <VBox alignment="CENTER" maxWidth="520.0" spacing="20.0" BorderPane.alignment="CENTER">
+         <children>
+            <VBox alignment="CENTER" spacing="4.0">
+               <children>
+                  <Label styleClass="page-title" text="Create Account" />
+                  <Label styleClass="page-subtitle" text="Enter the following fields:" />
+               </children>
+            </VBox>
+
+            <VBox styleClass="panel">
+               <children>
+                  <GridPane styleClass="form-grid">
+                     <columnConstraints>
+                        <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="-Infinity" />
+                        <ColumnConstraints hgrow="ALWAYS" />
+                     </columnConstraints>
+                     <children>
+                        <Label styleClass="field-label" text="First Name:" />
+                        <TextField fx:id="firstNameTextField" maxWidth="Infinity" promptText="John" GridPane.columnIndex="1" />
+
+                        <Label styleClass="field-label" text="Last Name:" GridPane.rowIndex="1" />
+                        <TextField fx:id="lastNameTextField" maxWidth="Infinity" promptText="Doe" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                        <Label styleClass="field-label" text="Account Name:" GridPane.rowIndex="2" />
+                        <TextField fx:id="accountNameTextField" maxWidth="Infinity" promptText="Savings" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                        <Label styleClass="field-label" text="Balance:" GridPane.rowIndex="3" />
+
+                        <!-- Dollars and cents stay two fields because the controller parses them separately,
+                             but the separators now sit in the flow instead of being placed by coordinate. -->
+                        <HBox alignment="CENTER_LEFT" spacing="4.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                           <children>
+                              <Label styleClass="field-label" text="\$" />
+                              <TextField fx:id="dollarTextField" prefWidth="110.0" promptText="123" />
+                              <Label styleClass="field-label" text="." />
+                              <TextField fx:id="centTextField" prefWidth="52.0" promptText="45" />
+                           </children>
+                        </HBox>
+                     </children>
+                  </GridPane>
+
+                  <Button fx:id="createAccountButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#createNewAccount" styleClass="accent" text="Create account" />
+                  <Label fx:id="errorMessageLabel" styleClass="error-label" text="Some fields are not filled." visible="false" />
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </center>
+</BorderPane>

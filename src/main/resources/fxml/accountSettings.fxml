@@ -3,28 +3,63 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AccountSettingsController">
-   <children>
-      <Button fx:id="goBackButton" layoutX="20.0" layoutY="20.0" mnemonicParsing="false" onAction="#goBack" prefHeight="35.0" prefWidth="161.0" text="&lt;  Dashboard" />
-      <VBox alignment="CENTER" layoutX="149.0" prefHeight="400.0" prefWidth="300.0" spacing="10.0">
+<BorderPane prefHeight="700.0" prefWidth="1100.0" styleClass="page" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AccountSettingsController">
+   <top>
+      <HBox styleClass="page-header" BorderPane.alignment="CENTER">
          <children>
-            <Label alignment="CENTER" styleClass="title" text="Your Account" />
-            <Label alignment="CENTER" styleClass="subtitle" text="Edit Account Info:" underline="true" />
-            <Label fx:id="currentBalanceLabel" alignment="CENTER" styleClass="subtitle" text="Current Balance: $xxx.xx" />
-            <Label alignment="CENTER" styleClass="content" text="Account Name:" />
-            <TextField fx:id="accountNameTextField" alignment="CENTER" prefHeight="25.0" prefWidth="552.0" />
-            <Label alignment="CENTER" styleClass="content" text="User First Name:" />
-            <TextField fx:id="firstNameTextField" alignment="CENTER" />
-            <Label alignment="CENTER" styleClass="content" text="User Last Name:" />
-            <TextField fx:id="lastNameTextField" alignment="CENTER" />
-            <Label alignment="CENTER" styleClass="subtitle" text="Other:" underline="true" />
-            <Button fx:id="updateAccountButton" alignment="CENTER" mnemonicParsing="false" onAction="#updateAccount" text="Update Account" />
-            <Button fx:id="deleteAccountButton" alignment="CENTER" mnemonicParsing="false" onAction="#deleteAccount" text="Delete Account" textFill="#c93838" />
-            <Label fx:id="fieldsMissingLabel" alignment="CENTER" text="Some fields are missing." textFill="RED" visible="false" />
+            <Button fx:id="goBackButton" mnemonicParsing="false" onAction="#goBack" styleClass="back-button" text="&lt;  Dashboard" />
+         </children>
+      </HBox>
+   </top>
+   <center>
+      <VBox alignment="CENTER" maxWidth="520.0" spacing="20.0" BorderPane.alignment="CENTER">
+         <children>
+            <VBox alignment="CENTER" spacing="4.0">
+               <children>
+                  <Label styleClass="page-title" text="Your Account" />
+                  <Label fx:id="currentBalanceLabel" styleClass="page-subtitle" text="Current Balance: \$xxx.xx" />
+               </children>
+            </VBox>
+
+            <VBox styleClass="panel">
+               <children>
+                  <Label styleClass="section-title" text="Edit Account Info" />
+
+                  <GridPane styleClass="form-grid">
+                     <columnConstraints>
+                        <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="-Infinity" />
+                        <ColumnConstraints hgrow="ALWAYS" />
+                     </columnConstraints>
+                     <children>
+                        <Label styleClass="field-label" text="Account Name:" />
+                        <TextField fx:id="accountNameTextField" maxWidth="Infinity" GridPane.columnIndex="1" />
+
+                        <Label styleClass="field-label" text="User First Name:" GridPane.rowIndex="1" />
+                        <TextField fx:id="firstNameTextField" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                        <Label styleClass="field-label" text="User Last Name:" GridPane.rowIndex="2" />
+                        <TextField fx:id="lastNameTextField" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                     </children>
+                  </GridPane>
+
+                  <Button fx:id="updateAccountButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#updateAccount" styleClass="accent" text="Update Account" />
+                  <Label fx:id="fieldsMissingLabel" styleClass="error-label" text="Some fields are missing." visible="false" />
+               </children>
+            </VBox>
+
+            <VBox styleClass="panel">
+               <children>
+                  <Label styleClass="section-title" text="Other" />
+                  <Button fx:id="deleteAccountButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#deleteAccount" styleClass="danger" text="Delete Account" />
+               </children>
+            </VBox>
          </children>
       </VBox>
-   </children>
-</AnchorPane>
+   </center>
+</BorderPane>
