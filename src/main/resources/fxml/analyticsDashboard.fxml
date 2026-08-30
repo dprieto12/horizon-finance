@@ -51,14 +51,62 @@
       </VBox>
    </top>
    <center>
-      <ScrollPane fitToWidth="true" styleClass="plain" BorderPane.alignment="CENTER">
+      <ScrollPane fx:id="analyticsScrollPane" fitToWidth="true" styleClass="plain" BorderPane.alignment="CENTER">
          <content>
-            <!-- AnalyticsDashboardController appends its charts and no-data labels to the end of this VBox,
-                 so nothing static may be added below totalsLabel. -->
-            <VBox fx:id="mainVBox" spacing="16.0">
+            <!-- Each region below is an explicit insertion point for AnalyticsDashboardController, so the
+                 order of the page is fixed here rather than depending on the order the controller happens to
+                 plot in. mainVBox spacing is bound in the controller so gaps grow with the window. -->
+            <VBox fx:id="mainVBox">
                <children>
                   <Label fx:id="summaryLabel" styleClass="section-title" text="Summary - All Time:" />
-                  <Label fx:id="totalsLabel" alignment="CENTER" maxWidth="Infinity" text="Total Income: x              Total Expenses:           Net:              Avg/Month:" wrapText="true" />
+                  <Label fx:id="dataErrorLabel" styleClass="error-label" visible="false" />
+
+                  <HBox fx:id="totalsRow" styleClass="stat-row">
+                     <children>
+                        <VBox styleClass="stat-tile" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label fx:id="incomeValueLabel" styleClass="stat-value, amount-income" text="\$0.00" />
+                              <Label styleClass="stat-label" text="Total Income" />
+                           </children>
+                        </VBox>
+                        <VBox styleClass="stat-tile" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label fx:id="expensesValueLabel" styleClass="stat-value, amount-expense" text="\$0.00" />
+                              <Label styleClass="stat-label" text="Total Expenses" />
+                           </children>
+                        </VBox>
+                        <VBox styleClass="stat-tile" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label fx:id="netValueLabel" styleClass="stat-value" text="\$0.00" />
+                              <Label styleClass="stat-label" text="Net" />
+                           </children>
+                        </VBox>
+                        <VBox styleClass="stat-tile" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label fx:id="avgValueLabel" styleClass="stat-value" text="\$0.00" />
+                              <Label styleClass="stat-label" text="Net Avg / Month" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+
+                  <VBox fx:id="barChartBox" styleClass="income-expense-chart" />
+
+                  <!-- Income and expense pies share this row, each taking half the width. -->
+                  <HBox fx:id="pieChartRow" alignment="TOP_CENTER" />
+
+                  <!-- Purchases gets its own row: it carries the most categories of the three, so it was
+                       unreadably small when all three shared one row at the default window size. -->
+                  <VBox fx:id="purchaseChartBox" alignment="TOP_CENTER" />
+
+                  <VBox fx:id="balanceChartBox" />
+
+                  <VBox styleClass="panel">
+                     <children>
+                        <Label styleClass="section-title" text="Top Transactions" />
+                        <VBox fx:id="topTransactionsList" />
+                     </children>
+                  </VBox>
                </children>
             </VBox>
          </content>

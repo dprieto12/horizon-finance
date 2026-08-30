@@ -219,11 +219,48 @@
 }
 
 /*
- * Monetary direction, for any label showing a signed amount. The analytics summary cannot use these yet:
- * AnalyticsDashboardController builds its totals as one preformatted string in a single label, so there is
- * no per-figure node to color. A .stat-tile component was dropped for the same reason -- there is no markup
- * that needs it until those totals become separate labels.
+ * A single figure with a caption beneath it, used for the analytics summary totals. Compose as a VBox
+ * carrying .stat-tile with a .stat-value and a .stat-label inside. The two inner classes are deliberately
+ * standalone rather than scoped as .stat-tile > .stat-value, so the same type scale can label a figure
+ * anywhere -- the transaction rows reuse .stat-label for dates.
  */
+.stat-tile {
+    -fx-background-color: -horizon-surface;
+    -fx-background-radius: 10px;
+    -fx-border-color: -horizon-surface-border;
+    -fx-border-width: 1px;
+    -fx-border-radius: 10px;
+    -fx-padding: 16px;
+    -fx-spacing: 4px;
+    -fx-alignment: CENTER;
+}
+
+.stat-value {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.stat-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-fg-muted;
+}
+
+/* Row of stat tiles across the width of the page. */
+.stat-row {
+    -fx-spacing: 12px;
+    -fx-alignment: CENTER;
+}
+
+/* One entry in a list of transactions: description and date left, amount pushed right by a spacer. */
+.transaction-row {
+    -fx-spacing: 12px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 8px 0;
+    -fx-border-color: transparent transparent -color-border-subtle transparent;
+    -fx-border-width: 1px;
+}
+
+/* Monetary direction, for any label showing a signed amount. */
 .amount-income {
     -fx-text-fill: -horizon-income;
 }
@@ -243,14 +280,36 @@
 }
 
 
+/* Charts ----------------------------------------------------------------------------------------------- */
+
+/*
+ * AtlantaFX already themes charts thoroughly -- titles, axes, legends, gridlines, pie slices and area series
+ * all resolve from its -color-chart-1 through -color-chart-8 ramp. Only the income/expense bar chart needs
+ * overriding, because there the two series carry meaning that a neutral categorical ramp cannot express.
+ *
+ * Scoped to the container the bar chart is placed in, since "series 0 is income" is true of that one chart
+ * and not of bar charts in general. AtlantaFX derives .chart-bar's background gradient from -fx-bar-fill, so
+ * setting that one property recolors the bars and their legend swatches together -- the swatches carry the
+ * same .default-colorN.chart-bar classes, which is why the previous inline node.setStyle() left the legend
+ * disagreeing with the bars.
+ */
+.income-expense-chart .chart-bar.default-color0 {
+    -fx-bar-fill: -horizon-income;
+}
+
+.income-expense-chart .chart-bar.default-color1 {
+    -fx-bar-fill: -horizon-expense;
+}
+
+
 /* Set from Java ---------------------------------------------------------------------------------------- */
 
 /*
- * No FXML references this. AnalyticsDashboardController adds it in code to the labels it creates at runtime
- * (getStyleClass().add("content")), so removing it would silently unstyle those. The .title, .subtitle and
- * .dark-background classes that used to sit here are gone: every scene now uses .page-title, .section-title
- * and .page instead.
+ * No FXML references this. AnalyticsDashboardController adds it to the placeholder labels it creates when a
+ * period has no data to plot, in place of the hardcoded inline #D8DEE9 it used to set.
  */
-.content {
+.chart-message {
     -fx-font-size: 14px;
+    -fx-text-fill: -color-fg-muted;
+    -fx-padding: 12px 0;
 }

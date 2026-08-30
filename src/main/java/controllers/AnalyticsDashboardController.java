@@ -1,20 +1,25 @@
 package controllers;
 
 import database.DatabaseManager;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.NumberBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.Scene;
 import javafx.scene.chart.AreaChart;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.Chart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.StackedBarChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import models.Account;
 import models.AccountSummary;
 import models.Transaction;
@@ -36,6 +41,26 @@ import java.util.stream.Collectors;
 
 
 public class AnalyticsDashboardController {
+
+    /** Chart height as a fraction of the available width, keeping each chart to a stable aspect ratio. */
+    private static final double WIDE_CHART_RATIO = 0.36;
+    private static final double PIE_CHART_RATIO = 0.34;
+    private static final double PURCHASE_CHART_RATIO = 0.42;
+
+    /** Height floors, so charts stay legible when the window is at its smallest. */
+    private static final double WIDE_CHART_MIN_HEIGHT = 280;
+    private static final double PIE_CHART_MIN_HEIGHT = 260;
+    private static final double PURCHASE_CHART_MIN_HEIGHT = 320;
+
+    /**
+     * Width the purchases pie is allowed to take on its own row. A pie's usable size is driven by height, so
+     * letting it span the full width would only add empty space either side of the same-sized pie.
+     */
+    private static final double PURCHASE_CHART_WIDTH_SHARE = 0.6;
+
+    @FXML
+    private ScrollPane analyticsScrollPane;
+
     @FXML
     private VBox mainVBox;
 
@@ -55,7 +80,34 @@ public class AnalyticsDashboardController {
     private Label invalidDateLabel;
 
     @FXML
-    private Label totalsLabel;
+    private Label dataErrorLabel;
+
+    @FXML
+    private Label incomeValueLabel;
+
+    @FXML
+    private Label expensesValueLabel;
+
+    @FXML
+    private Label netValueLabel;
+
+    @FXML
+    private Label avgValueLabel;
+
+    @FXML
+    private VBox barChartBox;
+
+    @FXML
+    private HBox pieChartRow;
+
+    @FXML
+    private VBox purchaseChartBox;
+
+    @FXML
+    private VBox balanceChartBox;
+
+    @FXML
+    private VBox topTransactionsList;
 
     private Account currentAccount = ApplicationState.getCurrentAccount();
 
@@ -63,19 +115,63 @@ public class AnalyticsDashboardController {
 
     private AreaChart<String, Number> balanceLineChart;
 
-    private Label topTransactionsLabel;
-
     @FXML
     public void initialize() {
         SceneManager.setTitle("Analytics");
 
         updateAccountInfoLabel();
+        bindResponsiveSpacing();
         try {
             getAllTime();
         } catch (SQLException e) {
             e.printStackTrace();
-            totalsLabel.setText("Error loading data");
+            dataErrorLabel.setText("Error loading data");
+            dataErrorLabel.setVisible(true);
         }
+    }
+
+    /**
+     * Grows the gaps between sections along with the window, so a wide window spreads content out instead of
+     * leaving the same tight gutters it needs when narrow.
+     */
+    private void bindResponsiveSpacing() {
+        NumberBinding spacing = Bindings.max(16, analyticsScrollPane.widthProperty().multiply(0.018));
+        mainVBox.spacingProperty().bind(spacing);
+        pieChartRow.spacingProperty().bind(spacing);
+    }
+
+    /**
+     * Lets a chart fill the width available to it and take its height from that width, so charts scale up as
+     * the window is expanded rather than staying at a fixed size.
+     * @param chart Chart to size
+     * @param heightRatio Height as a fraction of the scroll pane's width
+     * @param minHeight Smallest height in pixels, applied when the window is narrow
+     */
+    private void makeChartResponsive(Chart chart, double heightRatio, double minHeight) {
+        chart.setMaxWidth(Double.MAX_VALUE);
+        chart.prefHeightProperty().bind(
+                Bindings.max(minHeight, analyticsScrollPane.widthProperty().multiply(heightRatio)));
+    }
+
+    /** Placeholder shown in place of a chart when the selected period has nothing to plot. */
+    private Label createChartMessage(String message) {
+        Label label = new Label(message);
+        label.getStyleClass().add("chart-message");
+        return label;
+    }
+
+    private String formatAmount(double amount) {
+        return "$" + String.format("%.2f", amount);
+    }
+
+    /**
+     * Shows a signed figure and colors it by direction, so a negative net reads as an expense without the
+     * reader having to parse the sign.
+     */
+    private void setSignedAmount(Label label, double amount) {
+        label.setText((amount < 0 ? "-$" : "+$") + String.format("%.2f", Math.abs(amount)));
+        label.getStyleClass().removeAll("amount-income", "amount-expense");
+        label.getStyleClass().add(amount < 0 ? "amount-expense" : "amount-income");
     }
 
     private void updateAccountInfoLabel() {
@@ -141,16 +237,24 @@ public class AnalyticsDashboardController {
             invalidDateLabel.setVisible(false);
             summaryLabel.setText("Summary - Custom Range:");
 
-            setTotalsLabel(fromDate, toDate);
-            plotIncomeExpenseBarChart(fromDate, toDate);
-            setTopTransactionsLabel(fromDate, toDate);
+            // Refreshes every section, matching the preset period buttons. Updating only the totals, bar chart
+            // and transaction list left the pie charts and balance chart showing the previously selected range.
+            refreshPage(fromDate, toDate);
         }
     }
 
-    private void setTotalsLabel(LocalDate sinceDate, LocalDate toDate) throws SQLException {
+    /**
+     * Fills the four summary tiles. Reads the same AccountSummary as before, but takes its fields directly
+     * rather than its toString(), which packed all four figures into one tab-separated line.
+     */
+    private void setTotals(LocalDate sinceDate, LocalDate toDate) throws SQLException {
         AccountSummary currentAccountSummary = DatabaseManager.getInstance().getSummary(currentAccount.getAccountID(),
                 sinceDate, toDate);
-        totalsLabel.setText(currentAccountSummary.toString());
+
+        incomeValueLabel.setText(formatAmount(currentAccountSummary.income));
+        expensesValueLabel.setText(formatAmount(currentAccountSummary.expenses));
+        setSignedAmount(netValueLabel, currentAccountSummary.net);
+        setSignedAmount(avgValueLabel, currentAccountSummary.avgNetPerMonth);
     }
     
     private void plotIncomeExpenseBarChart(LocalDate sinceDate, LocalDate toDate) {
@@ -172,16 +276,12 @@ public class AnalyticsDashboardController {
         barChart.getData().addAll(incomeSeries, expenseSeries);
         styleBars();
 
-        mainVBox.getChildren().add(barChart);
+        makeChartResponsive(barChart, WIDE_CHART_RATIO, WIDE_CHART_MIN_HEIGHT);
+        barChartBox.getChildren().add(barChart);
     }
 
     private void removeExistingChart() {
-        if (barChart != null) {
-            mainVBox.getChildren().remove(barChart);
-        }
-        if (balanceLineChart != null) {
-            mainVBox.getChildren().remove(balanceLineChart);
-        }
+        barChartBox.getChildren().clear();
     }
 
     private Set<String> getAllMonths(Map<String, Double> incomeValues, Map<String, Double> expenseValues) {
@@ -221,23 +321,20 @@ public class AnalyticsDashboardController {
         return series;
     }
 
+    /**
+     * Bar colors are no longer set here. They come from styles.css, which targets the series classes JavaFX
+     * already applies (.default-color0 for the income series, .default-color1 for expenses). An inline style
+     * would outrank the stylesheet, and it only reached the bars themselves -- the legend swatches kept the
+     * theme's default colors and disagreed with them.
+     */
     private void styleBars() {
         for (XYChart.Series<Number, String> series : barChart.getData()) {
             for (XYChart.Data<Number, String> data : series.getData()) {
                 javafx.scene.Node node = data.getNode();
                 if (node != null) {
-                    applyBarColor(node, series.getName());
                     addTooltip(node, series.getName(), data.getXValue());
                 }
             }
-        }
-    }
-
-    private void applyBarColor(javafx.scene.Node node, String seriesName) {
-        if (seriesName.equals("Income")) {
-            node.setStyle("-fx-bar-fill: #4CAF50;"); // Green
-        } else {
-            node.setStyle("-fx-bar-fill: #F44336;"); // Red
         }
     }
 
@@ -262,10 +359,7 @@ public class AnalyticsDashboardController {
                 .collect(Collectors.toList());
 
         if (filteredEntries.isEmpty()) {
-            Label noDataLabel = new Label("No balance data available for this period");
-            noDataLabel.getStyleClass().add("content");
-            noDataLabel.setStyle("-fx-text-fill: #D8DEE9;");
-            mainVBox.getChildren().add(noDataLabel);
+            balanceChartBox.getChildren().add(createChartMessage("No balance data available for this period"));
             return;
         }
 
@@ -287,17 +381,17 @@ public class AnalyticsDashboardController {
         }
 
         balanceLineChart.getData().add(series);
-        mainVBox.getChildren().add(balanceLineChart);
+
+        makeChartResponsive(balanceLineChart, WIDE_CHART_RATIO, WIDE_CHART_MIN_HEIGHT);
+        balanceChartBox.getChildren().add(balanceLineChart);
     }
 
+    /**
+     * Clearing the chart's own container replaces the previous approach of matching placeholder labels by
+     * their text, which broke silently if the wording ever changed.
+     */
     private void removeExistingBalanceChart() {
-        if (balanceLineChart != null) {
-            mainVBox.getChildren().remove(balanceLineChart);
-        }
-        mainVBox.getChildren().removeIf(node ->
-            node instanceof Label &&
-            ((Label) node).getText().equals("No balance data available for this period")
-        );
+        balanceChartBox.getChildren().clear();
     }
 
 
@@ -332,18 +426,25 @@ public class AnalyticsDashboardController {
         });
 
         if (incomePieChartData.isEmpty()) {
-            Label noDataLabel = new Label("No income data available for this period");
-            noDataLabel.getStyleClass().add("content");
-            noDataLabel.setStyle("-fx-text-fill: #D8DEE9;");
-            mainVBox.getChildren().add(noDataLabel);
+            pieChartRow.getChildren().add(createChartMessage("No income data available for this period"));
         } else {
             PieChart incomePieChart = new PieChart(incomePieChartData);
             incomePieChart.setTitle("Income by Type");
             incomePieChart.setLegendVisible(true);
             incomePieChart.setLabelsVisible(true);
 
-            mainVBox.getChildren().add(incomePieChart);
+            addPieChart(incomePieChart);
         }
+    }
+
+    /**
+     * Places a pie chart in the shared row, giving it an equal share of the width and a height that tracks
+     * that width so all three stay square-ish as the window grows.
+     */
+    private void addPieChart(PieChart pieChart) {
+        makeChartResponsive(pieChart, PIE_CHART_RATIO, PIE_CHART_MIN_HEIGHT);
+        HBox.setHgrow(pieChart, Priority.ALWAYS);
+        pieChartRow.getChildren().add(pieChart);
     }
 
     private void plotExpensePieChart(Map<String, Double> typeAmountMap) {
@@ -356,17 +457,14 @@ public class AnalyticsDashboardController {
         });
 
         if (expensePieChartData.isEmpty()) {
-            Label noDataLabel = new Label("No expense data available for this period");
-            noDataLabel.getStyleClass().add("content");
-            noDataLabel.setStyle("-fx-text-fill: #D8DEE9;");
-            mainVBox.getChildren().add(noDataLabel);
+            pieChartRow.getChildren().add(createChartMessage("No expense data available for this period"));
         } else {
             PieChart expensePieChart = new PieChart(expensePieChartData);
             expensePieChart.setTitle("Expenses by Type");
             expensePieChart.setLegendVisible(true);
             expensePieChart.setLabelsVisible(true);
 
-            mainVBox.getChildren().add(expensePieChart);
+            addPieChart(expensePieChart);
         }
     }
 
@@ -378,23 +476,34 @@ public class AnalyticsDashboardController {
         });
 
         if (purchasePieChartData.isEmpty()) {
-            Label noDataLabel = new Label("No purchase data available for this period");
-            noDataLabel.getStyleClass().add("content");
-            noDataLabel.setStyle("-fx-text-fill: #D8DEE9;");
-            mainVBox.getChildren().add(noDataLabel);
+            purchaseChartBox.getChildren().add(createChartMessage("No purchase data available for this period"));
         } else {
             PieChart purchasePieChart = new PieChart(purchasePieChartData);
             purchasePieChart.setTitle("Purchases by Category");
             purchasePieChart.setLegendVisible(true);
             purchasePieChart.setLabelsVisible(true);
 
-            mainVBox.getChildren().add(purchasePieChart);
+            addPurchasePieChart(purchasePieChart);
         }
     }
 
+    /**
+     * Places the purchases pie on its own row beneath the income and expense pair. It has the most categories
+     * of the three, so sharing a row left it too small to read at the default window size.
+     */
+    private void addPurchasePieChart(PieChart pieChart) {
+        makeChartResponsive(pieChart, PURCHASE_CHART_RATIO, PURCHASE_CHART_MIN_HEIGHT);
+
+        // Bound after makeChartResponsive, which sets maxWidth directly: a bound property cannot then be set.
+        pieChart.maxWidthProperty().bind(
+                analyticsScrollPane.widthProperty().multiply(PURCHASE_CHART_WIDTH_SHARE));
+
+        purchaseChartBox.getChildren().add(pieChart);
+    }
+
     private void removeExistingPieCharts() {
-        mainVBox.getChildren().removeIf(node -> node instanceof PieChart ||
-            (node instanceof Label && ((Label) node).getText().contains("No ") && ((Label) node).getText().contains(" data available")));
+        pieChartRow.getChildren().clear();
+        purchaseChartBox.getChildren().clear();
     }
 
     private String pluralizeType(String type) {
@@ -413,40 +522,59 @@ public class AnalyticsDashboardController {
     }
 
 
-    private void setTopTransactionsLabel(LocalDate sinceDate, LocalDate toDate) {
-        removeExistingTopTransactionsLabel();
-
-        topTransactionsLabel = new Label();
-        topTransactionsLabel.getStyleClass().add("content");
-        topTransactionsLabel.setStyle("-fx-text-fill: #D8DEE9;");
+    /**
+     * Lists the largest transactions of the period as one row each, rather than as a single block of
+     * newline-separated toString() output, so each amount can be colored by direction.
+     */
+    private void setTopTransactions(LocalDate sinceDate, LocalDate toDate) {
+        topTransactionsList.getChildren().clear();
 
         ObservableList<Transaction> topFiveList = DatabaseManager.getInstance().getTopTransactionsByDateRange(
                 currentAccount.getAccountID(), sinceDate, toDate, 5);
+
         if (topFiveList.isEmpty()) {
-            topTransactionsLabel.setText("Top Transactions:\nNo transactions found for this period.");
-        } else {
-            StringBuilder sb = new StringBuilder("Top Transactions:\n");
-            for (Transaction transaction : topFiveList) {
-                sb.append(transaction.toString()).append("\n");
-            }
-            topTransactionsLabel.setText(sb.toString());
+            topTransactionsList.getChildren().add(createChartMessage("No transactions found for this period."));
+            return;
         }
 
-        mainVBox.getChildren().add(topTransactionsLabel);
+        for (Transaction transaction : topFiveList) {
+            topTransactionsList.getChildren().add(createTransactionRow(transaction));
+        }
     }
 
-    private void removeExistingTopTransactionsLabel() {
-        if (topTransactionsLabel != null) {
-            mainVBox.getChildren().remove(topTransactionsLabel);
-        }
+    /** Builds one transaction row: type and date on the left, the amount pushed to the right edge. */
+    private HBox createTransactionRow(Transaction transaction) {
+        Label typeLabel = new Label(describeType(transaction));
+
+        Label dateLabel = new Label(transaction.getDate().toString());
+        dateLabel.getStyleClass().add("stat-label");
+
+        // Absorbs the leftover width so the amount stays flush right at any window size.
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Label amountLabel = new Label(formatAmount(transaction.getAmount()));
+        amountLabel.getStyleClass().addAll("text-bold",
+                Transaction.isExpense(transaction.getType()) ? "amount-expense" : "amount-income");
+
+        HBox row = new HBox(typeLabel, dateLabel, spacer, amountLabel);
+        row.getStyleClass().add("transaction-row");
+        return row;
+    }
+
+    /** Purchases carry a category worth showing; every other type is described by its type alone. */
+    private String describeType(Transaction transaction) {
+        return Transaction.requiresCategory(transaction.getType()) && transaction.getCategory() != null
+                ? transaction.getType() + " - " + transaction.getCategory()
+                : transaction.getType();
     }
 
     private void refreshPage(LocalDate sinceDate, LocalDate toDate) throws SQLException {
-        setTotalsLabel(sinceDate, toDate);
+        setTotals(sinceDate, toDate);
         plotIncomeExpenseBarChart(sinceDate, toDate);
         plotPieCharts(sinceDate, toDate);
         plotBalanceLineChart(sinceDate, toDate);
-        setTopTransactionsLabel(sinceDate, toDate);
+        setTopTransactions(sinceDate, toDate);
     }
 
 }

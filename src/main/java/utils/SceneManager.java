@@ -22,12 +22,16 @@ public class SceneManager {
     private static final double DEFAULT_HEIGHT = 700;
 
     /**
-     * Smallest size the window can be resized to, in pixels. Chosen to clear the widest and tallest scene
-     * content in the application (the 900x600 layout in transactionOptions.fxml) with room left over for the
-     * window frame, so that no scene clips at the minimum size.
+     * Smallest size the window can be resized to, in pixels, including the window frame.
+     *
+     * Now that every scene lays itself out with containers rather than fixed coordinates, the point at which
+     * content actually stops fitting is much lower than it was: measured across the six scenes, the largest
+     * layout minimum is 505px wide (the list plus fixed-width form in transactionOptions) and 567px tall (the
+     * two stacked panels in accountSettings). These values clear both, with headroom so that the four summary
+     * tiles in analyticsDashboard still read comfortably rather than merely avoiding a clip.
      */
-    private static final double MIN_WIDTH = 940;
-    private static final double MIN_HEIGHT = 680;
+    private static final double MIN_WIDTH = 720;
+    private static final double MIN_HEIGHT = 640;
 
     /**
      * This method sets the static stage reference to the passed stage parameter, and applies the window size
