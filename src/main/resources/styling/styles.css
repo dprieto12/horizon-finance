@@ -5,15 +5,13 @@
 }
 
 @font-face {
-    -fx-font-family: "Inter";
+    -fx-font-family: "Inter Bold";
     src: url("../fonts/Inter/static/Inter_18pt-Bold.ttf");
-    -fx-font-weight: bold;
 }
 
 @font-face {
-    -fx-font-family: "Inter";
+    -fx-font-family: "Inter Italic";
     src: url("../fonts/Inter/static/Inter_18pt-Italic.ttf");
-    -fx-font-style: italic;
 }
 
 /* Global font application using Inter with fallbacks */
@@ -120,4 +118,9 @@
 
 .axis-tick-mark {
     -fx-font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Dark background for AtlantaFX NordDark theme compatibility */
+.dark-background {
+    -fx-background-color: #2E3440;
 }

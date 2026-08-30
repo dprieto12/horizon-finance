@@ -4,23 +4,27 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AccountSettingsController">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AccountSettingsController">
    <children>
-      <Label layoutX="228.0" layoutY="26.0" styleClass="title" text="Your Account" />
-      <Label layoutX="245.0" layoutY="109.0" styleClass="subtitle" text="Edit Account Info:" underline="true" />
-      <Label fx:id="currentBalanceLabel" layoutX="226.0" layoutY="72.0" styleClass="subtitle" text="Current Balance: $xxx.xx" />
-      <Label layoutX="172.0" layoutY="141.0" styleClass="content" text="Account Name:" />
-      <TextField fx:id="accountNameTextField" layoutX="289.0" layoutY="137.0" />
-      <Label layoutX="172.0" layoutY="191.0" styleClass="content" text="User First Name:" />
-      <TextField fx:id="firstNameTextField" layoutX="289.0" layoutY="187.0" />
-      <Label layoutX="172.0" layoutY="234.0" styleClass="content" text="User Last Name:" />
-      <TextField fx:id="lastNameTextField" layoutX="289.0" layoutY="230.0" />
-      <Label layoutX="281.0" layoutY="333.0" styleClass="subtitle" text="Other:" underline="true" />
-      <Button fx:id="updateAccountButton" layoutX="249.0" layoutY="268.0" mnemonicParsing="false" onAction="#updateAccount" text="Update Account" />
-      <Button fx:id="deleteAccountButton" layoutX="251.0" layoutY="360.0" mnemonicParsing="false" onAction="#deleteAccount" text="Delete Account" textFill="#c93838" />
-      <Label fx:id="fieldsMissingLabel" layoutX="236.0" layoutY="302.0" text="Some fields are missing." textFill="RED" visible="false" />
-      <Button fx:id="goBackButton" layoutX="20.0" layoutY="20.0" mnemonicParsing="false" onAction="#goBack" prefHeight="35.0" prefWidth="97.0" text="&lt;  Dashboard" />
+      <Button fx:id="goBackButton" layoutX="20.0" layoutY="20.0" mnemonicParsing="false" onAction="#goBack" prefHeight="35.0" prefWidth="161.0" text="&lt;  Dashboard" />
+      <VBox alignment="CENTER" layoutX="149.0" prefHeight="400.0" prefWidth="300.0" spacing="10.0">
+         <children>
+            <Label alignment="CENTER" styleClass="title" text="Your Account" />
+            <Label alignment="CENTER" styleClass="subtitle" text="Edit Account Info:" underline="true" />
+            <Label fx:id="currentBalanceLabel" alignment="CENTER" styleClass="subtitle" text="Current Balance: $xxx.xx" />
+            <Label alignment="CENTER" styleClass="content" text="Account Name:" />
+            <TextField fx:id="accountNameTextField" alignment="CENTER" prefHeight="25.0" prefWidth="552.0" />
+            <Label alignment="CENTER" styleClass="content" text="User First Name:" />
+            <TextField fx:id="firstNameTextField" alignment="CENTER" />
+            <Label alignment="CENTER" styleClass="content" text="User Last Name:" />
+            <TextField fx:id="lastNameTextField" alignment="CENTER" />
+            <Label alignment="CENTER" styleClass="subtitle" text="Other:" underline="true" />
+            <Button fx:id="updateAccountButton" alignment="CENTER" mnemonicParsing="false" onAction="#updateAccount" text="Update Account" />
+            <Button fx:id="deleteAccountButton" alignment="CENTER" mnemonicParsing="false" onAction="#deleteAccount" text="Delete Account" textFill="#c93838" />
+            <Label fx:id="fieldsMissingLabel" alignment="CENTER" text="Some fields are missing." textFill="RED" visible="false" />
+         </children>
+      </VBox>
    </children>
 </AnchorPane>

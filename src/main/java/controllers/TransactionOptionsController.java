@@ -19,6 +19,7 @@ import utils.SceneManager;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Comparator;
 
 public class TransactionOptionsController {
     @FXML
@@ -45,11 +46,18 @@ public class TransactionOptionsController {
     @FXML
     private Label errorMessageLabel;
 
+    @FXML
+    private ComboBox<String> viewModeComboBox;
+
     private ObservableList<Transaction> transactionsList;
 
     @FXML
     public void initialize() {
         SceneManager.setTitle("Transaction Options");
+
+        // Initialize view mode combo box
+        viewModeComboBox.setItems(FXCollections.observableArrayList("Recently Added", "By Date"));
+        viewModeComboBox.setValue("Recently Added");
 
         // Initialize category combo box
         categoryComboBox.setItems(FXCollections.observableArrayList(Transaction.purchaseCategories));
@@ -91,6 +99,9 @@ public class TransactionOptionsController {
             }
         });
 
+        // Set up view mode combo box listener to reload transactions
+        viewModeComboBox.setOnAction(event -> loadTransactions());
+
         // Load transactions
         loadTransactions();
 
@@ -123,6 +134,14 @@ public class TransactionOptionsController {
     private void loadTransactions() {
         int currentAccountID = ApplicationState.getCurrentAccount().getAccountID();
         transactionsList = DatabaseManager.getInstance().getTransactions(currentAccountID);
+
+        // Sort based on view mode
+        String viewMode = viewModeComboBox.getValue();
+        if ("By Date".equals(viewMode)) {
+            transactionsList.sort((t1, t2) -> t2.getDate().compareTo(t1.getDate()));
+        }
+        // "Recently Added" uses default order from database (likely by transaction ID descending)
+
         transactionListView.setItems(transactionsList);
     }
 

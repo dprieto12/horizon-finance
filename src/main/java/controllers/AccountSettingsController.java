@@ -89,20 +89,29 @@ public class AccountSettingsController {
 
     public void deleteAccount() throws IOException {
         // Create an alert for the user when they want to delete their account
-        Alert accountDeletionAlert = new Alert(Alert.AlertType.WARNING);
+        Alert accountDeletionAlert = new Alert(Alert.AlertType.WARNING, "Are you sure?", ButtonType.YES, ButtonType.NO);
         accountDeletionAlert.setTitle("Delete Account");
         accountDeletionAlert.setHeaderText("Are you sure you would like to delete your account?\n" +
                 ApplicationState.getCurrentAccount().getAccountName() +
                 " - " + ApplicationState.getCurrentAccount().getFirstName() +
                 " " + ApplicationState.getCurrentAccount().getLastName());
         accountDeletionAlert.setContentText("This action cannot be undone.");
-        accountDeletionAlert.showAndWait();
 
-        // If the user confirms, delete the account from the database and set the current account to null
-        DatabaseManager.getInstance().deleteAccount(ApplicationState.getCurrentAccount());
-        ApplicationState.setCurrentAccount(null);
+        // Show the alert and wait for user response
+        accountDeletionAlert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.YES) {
+                // If the user confirms, delete the account from the database and set the current account to null
+                DatabaseManager.getInstance().deleteAccount(ApplicationState.getCurrentAccount());
+                ApplicationState.setCurrentAccount(null);
 
-        // Switch to the choose account scene
-        SceneManager.switchScene("/fxml/chooseAccount.fxml");
+                try {
+                    // Switch to the choose account scene
+                    SceneManager.switchScene("/fxml/chooseAccount.fxml");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            // If the user clicks NO or closes the alert, they remain on the account settings page
+        });
     }
 }

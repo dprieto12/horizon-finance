@@ -69,4 +69,8 @@ public class CreateAccountController {
             errorMessageLabel.setVisible(true);
         }
     }
+
+    public void goBack() throws IOException {
+        SceneManager.switchScene("/fxml/chooseAccount.fxml");
+    }
 }

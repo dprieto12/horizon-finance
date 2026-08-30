@@ -8,9 +8,9 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<ScrollPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AnalyticsDashboardController">
+<ScrollPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="600.0" styleClass="dark-background" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AnalyticsDashboardController">
    <content>
-      <VBox fx:id="mainVBox" alignment="TOP_CENTER" spacing="10.0">
+      <VBox fx:id="mainVBox" alignment="TOP_CENTER" spacing="10.0" styleClass="dark-background">
          <children>
             <HBox alignment="CENTER" prefHeight="51.0" prefWidth="586.0" spacing="60.0">
                <children>

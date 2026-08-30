@@ -34,9 +34,6 @@ import java.util.stream.Collectors;
 // TODO: Document
 // TODO: Stylize
 
-// TODO: Implement custom dates
-// TODO: Implement type/category pie charts
-// TODO: Implement top transactions
 
 public class AnalyticsDashboardController {
     @FXML
@@ -267,7 +264,7 @@ public class AnalyticsDashboardController {
         if (filteredEntries.isEmpty()) {
             Label noDataLabel = new Label("No balance data available for this period");
             noDataLabel.getStyleClass().add("content");
-            noDataLabel.setStyle("-fx-text-fill: #888;");
+            noDataLabel.setStyle("-fx-text-fill: #D8DEE9;");
             mainVBox.getChildren().add(noDataLabel);
             return;
         }
@@ -337,7 +334,7 @@ public class AnalyticsDashboardController {
         if (incomePieChartData.isEmpty()) {
             Label noDataLabel = new Label("No income data available for this period");
             noDataLabel.getStyleClass().add("content");
-            noDataLabel.setStyle("-fx-text-fill: #888;");
+            noDataLabel.setStyle("-fx-text-fill: #D8DEE9;");
             mainVBox.getChildren().add(noDataLabel);
         } else {
             PieChart incomePieChart = new PieChart(incomePieChartData);
@@ -361,7 +358,7 @@ public class AnalyticsDashboardController {
         if (expensePieChartData.isEmpty()) {
             Label noDataLabel = new Label("No expense data available for this period");
             noDataLabel.getStyleClass().add("content");
-            noDataLabel.setStyle("-fx-text-fill: #888;");
+            noDataLabel.setStyle("-fx-text-fill: #D8DEE9;");
             mainVBox.getChildren().add(noDataLabel);
         } else {
             PieChart expensePieChart = new PieChart(expensePieChartData);
@@ -383,7 +380,7 @@ public class AnalyticsDashboardController {
         if (purchasePieChartData.isEmpty()) {
             Label noDataLabel = new Label("No purchase data available for this period");
             noDataLabel.getStyleClass().add("content");
-            noDataLabel.setStyle("-fx-text-fill: #888;");
+            noDataLabel.setStyle("-fx-text-fill: #D8DEE9;");
             mainVBox.getChildren().add(noDataLabel);
         } else {
             PieChart purchasePieChart = new PieChart(purchasePieChartData);
@@ -421,6 +418,7 @@ public class AnalyticsDashboardController {
 
         topTransactionsLabel = new Label();
         topTransactionsLabel.getStyleClass().add("content");
+        topTransactionsLabel.setStyle("-fx-text-fill: #D8DEE9;");
 
         ObservableList<Transaction> topFiveList = DatabaseManager.getInstance().getTopTransactionsByDateRange(
                 currentAccount.getAccountID(), sinceDate, toDate, 5);
