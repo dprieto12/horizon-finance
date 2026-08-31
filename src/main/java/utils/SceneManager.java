@@ -1,5 +1,12 @@
 package utils;
 
+import com.sun.jna.Native;
+import com.sun.jna.Pointer;
+import com.sun.jna.platform.win32.User32;
+import com.sun.jna.platform.win32.WinDef;
+import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.win32.StdCallLibrary;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -45,6 +52,11 @@ public class SceneManager {
         SceneManager.stage = newStage;
         stage.setMinWidth(MIN_WIDTH);
         stage.setMinHeight(MIN_HEIGHT);
+        
+        // Apply dark title bar on Windows after the stage is shown
+        if (isWindows()) {
+            Platform.runLater(() -> setDarkTitleBar(stage));
+        }
     }
 
     /**
@@ -76,5 +88,81 @@ public class SceneManager {
      */
     public static void setTitle(String newPage) {
         stage.setTitle(newPage + " - Horizon Finance");
+    }
+
+    /**
+     * Checks if the application is running on Windows.
+     */
+    private static boolean isWindows() {
+        return System.getProperty("os.name").toLowerCase().contains("win");
+    }
+
+    /**
+     * Sets the Windows title bar to dark mode using native Windows APIs.
+     */
+    private static void setDarkTitleBar(Stage stage) {
+        try {
+            System.out.println("Attempting to set dark title bar...");
+            // Get the native window handle
+            WinDef.HWND hwnd = getNativeWindowHandle(stage);
+            
+            if (hwnd != null) {
+                System.out.println("Found window handle: " + hwnd);
+                // Use Windows API to set dark mode
+                int result = DwmAPI.INSTANCE.DwmSetWindowAttribute(
+                    hwnd,
+                    20, // DWMWA_USE_IMMERSIVE_DARK_MODE
+                    new IntByReference(1),
+                    4
+                );
+                System.out.println("DwmSetWindowAttribute result: " + result + " (0 = success)");
+            } else {
+                System.err.println("Could not get window handle");
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to set dark title bar: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Gets the native window handle for a JavaFX Stage.
+     */
+    private static WinDef.HWND getNativeWindowHandle(Stage stage) {
+        try {
+            // Use User32 to find the window by title
+            String title = stage.getTitle();
+            System.out.println("Looking for window with title: " + title);
+            if (title == null || title.isEmpty()) {
+                System.err.println("Window title is null or empty");
+                return null;
+            }
+            
+            WinDef.HWND hwnd = User32.INSTANCE.FindWindow(null, title);
+            if (hwnd != null) {
+                System.out.println("Found window by title");
+            } else {
+                System.err.println("Could not find window by title, trying class name...");
+                // Try by class name as fallback
+                hwnd = User32.INSTANCE.FindWindow("SunAwtFrame", null);
+                if (hwnd != null) {
+                    System.out.println("Found window by class name");
+                }
+            }
+            return hwnd;
+        } catch (Exception e) {
+            System.err.println("Failed to get native window handle: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Interface for Windows DWM API.
+     */
+    private interface DwmAPI extends StdCallLibrary {
+        DwmAPI INSTANCE = Native.load("dwmapi", DwmAPI.class);
+        
+        int DwmSetWindowAttribute(WinDef.HWND hwnd, int attr, IntByReference attrValue, int attrSize);
     }
 }
