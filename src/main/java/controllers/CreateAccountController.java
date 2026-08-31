@@ -2,9 +2,11 @@ package controllers;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleGroup;
+import models.Account;
 import utils.TextFieldUtils;
 import utils.SceneManager;
 import database.DatabaseManager;
@@ -38,6 +40,9 @@ public class CreateAccountController {
     @FXML
     private Label errorMessageLabel;
 
+    @FXML
+    private ToggleGroup colorToggleGroup;
+
     private TextField[] textFields;
 
     @FXML
@@ -63,10 +68,30 @@ public class CreateAccountController {
             int dollar = Integer.parseInt(dollarTextField.getText().trim());
             int cent = Integer.parseInt(centTextField.getText().trim());
             double balance = dollar + (cent / 100.0);
-            DatabaseManager.getInstance().createNewAccount(accountName, firstName, lastName, balance);
+            DatabaseManager.getInstance().createNewAccount(accountName, firstName, lastName, balance,
+                    getSelectedColor());
             SceneManager.switchScene("/fxml/chooseAccount.fxml");
         } else {
             errorMessageLabel.setVisible(true);
+        }
+    }
+
+    /**
+     * Reads the palette index from the selected color swatch, which each swatch carries as its userData.
+     * Falls back to the default color if nothing is selected, so an account is never created without one.
+     * @return Palette index from 1 to Account.COLOR_COUNT
+     */
+    private int getSelectedColor() {
+        Toggle selectedSwatch = colorToggleGroup.getSelectedToggle();
+        if (selectedSwatch == null || selectedSwatch.getUserData() == null) {
+            return Account.DEFAULT_COLOR;
+        }
+
+        try {
+            return Integer.parseInt(selectedSwatch.getUserData().toString());
+        } catch (NumberFormatException e) {
+            System.err.println("Unreadable color swatch value: " + selectedSwatch.getUserData());
+            return Account.DEFAULT_COLOR;
         }
     }
 

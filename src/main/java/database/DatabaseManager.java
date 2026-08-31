@@ -55,6 +55,7 @@ public class DatabaseManager {
      */
     private void buildDatabase() {
         createAccountsTable();
+        addAccountColorColumn();
         createTransactionsTable();
     }
 
@@ -65,7 +66,8 @@ public class DatabaseManager {
                     account_name TEXT    NOT NULL,
                     first_name   TEXT    NOT NULL,
                     last_name    TEXT    NOT NULL,
-                    balance      REAL    NOT NULL
+                    balance      REAL    NOT NULL,
+                    color        INTEGER NOT NULL DEFAULT 1
                 );""";
         try (Connection conn = DriverManager.getConnection(databaseUrl);
              Statement stmt = conn.createStatement()) {
@@ -73,6 +75,38 @@ public class DatabaseManager {
             System.out.println("Connected to horizon_database.");
         } catch (SQLException e) {
             System.err.println("Failed to create accounts table: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Adds the color column to databases created before accounts had colors. CREATE TABLE IF NOT EXISTS does
+     * nothing to a table that already exists, so an existing database would otherwise keep the old five-column
+     * shape and every account query would fail on the missing column.
+     *
+     * Checked against PRAGMA table_info rather than attempting the ALTER and swallowing the error, so an
+     * unrelated failure is still reported. The NOT NULL DEFAULT gives existing rows the default color.
+     */
+    private void addAccountColorColumn() {
+        try (Connection conn = DriverManager.getConnection(databaseUrl);
+             Statement stmt = conn.createStatement()) {
+
+            boolean columnExists = false;
+            try (ResultSet rs = stmt.executeQuery("PRAGMA table_info(accounts)")) {
+                while (rs.next()) {
+                    if ("color".equalsIgnoreCase(rs.getString("name"))) {
+                        columnExists = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!columnExists) {
+                stmt.execute("ALTER TABLE accounts ADD COLUMN color INTEGER NOT NULL DEFAULT "
+                        + Account.DEFAULT_COLOR);
+                System.out.println("Added color column to existing accounts table.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Failed to add account color column: " + e.getMessage());
         }
     }
 
@@ -106,13 +140,24 @@ public class DatabaseManager {
      * placeholder ID.
      */
     public void createNewAccount(String accountName, String firstName, String lastName, double balance) {
-        String query = "INSERT INTO accounts (account_name, first_name, last_name, balance) VALUES (?, ?, ?, ?)";
+        createNewAccount(accountName, firstName, lastName, balance, Account.DEFAULT_COLOR);
+    }
+
+    /**
+     * Inserts a new account row, including the color chosen for its tile.
+     * @param color Palette index from 1 to Account.COLOR_COUNT
+     */
+    public void createNewAccount(String accountName, String firstName, String lastName, double balance,
+                                 int color) {
+        String query = "INSERT INTO accounts (account_name, first_name, last_name, balance, color) " +
+                "VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DriverManager.getConnection(databaseUrl);
              PreparedStatement pstmt = conn.prepareStatement(query)) {
             pstmt.setString(1, accountName);
             pstmt.setString(2, firstName);
             pstmt.setString(3, lastName);
             pstmt.setDouble(4, balance);
+            pstmt.setInt(5, color);
             pstmt.executeUpdate();
             System.out.println("Created account \"" + accountName + "\" for " + firstName + " " + lastName + ".");
         } catch (SQLException e) {
@@ -128,15 +173,16 @@ public class DatabaseManager {
      * @param account Modified Account object to persist
      */
     public void updateAccount(Account account) {
-        String query = "UPDATE accounts SET account_name = ?, first_name = ?, last_name = ?, balance = ? " +
-                "WHERE account_id = ?";
+        String query = "UPDATE accounts SET account_name = ?, first_name = ?, last_name = ?, balance = ?, " +
+                "color = ? WHERE account_id = ?";
         try (Connection conn = DriverManager.getConnection(databaseUrl);
              PreparedStatement pstmt = conn.prepareStatement(query)) {
             pstmt.setString(1, account.getAccountName());
             pstmt.setString(2, account.getFirstName());
             pstmt.setString(3, account.getLastName());
             pstmt.setDouble(4, account.getBalance());
-            pstmt.setInt(5, account.getAccountID());
+            pstmt.setInt(5, account.getColor());
+            pstmt.setInt(6, account.getAccountID());
             pstmt.executeUpdate();
             System.out.println("Account updated successfully.");
         } catch (SQLException e) {
@@ -173,7 +219,7 @@ public class DatabaseManager {
      * @return ArrayList of Account objects
      */
     public ArrayList<Account> getAccountList() {
-        String query = "SELECT account_id, account_name, first_name, last_name, balance " +
+        String query = "SELECT account_id, account_name, first_name, last_name, balance, color " +
                 "FROM accounts ORDER BY account_id";
         ArrayList<Account> accounts = new ArrayList<>();
         try (Connection conn = DriverManager.getConnection(databaseUrl);
@@ -196,7 +242,7 @@ public class DatabaseManager {
      * @return Account object, or null if not found
      */
     public Account getAccount(int accountID) {
-        String query = "SELECT account_id, account_name, first_name, last_name, balance " +
+        String query = "SELECT account_id, account_name, first_name, last_name, balance, color " +
                 "FROM accounts WHERE account_id = ?";
         try (Connection conn = DriverManager.getConnection(databaseUrl);
              PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -622,7 +668,8 @@ public class DatabaseManager {
                 rs.getString("account_name"),
                 rs.getString("first_name"),
                 rs.getString("last_name"),
-                rs.getDouble("balance")
+                rs.getDouble("balance"),
+                rs.getInt("color")
         );
     }
 

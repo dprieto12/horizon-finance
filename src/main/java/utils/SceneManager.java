@@ -25,13 +25,16 @@ public class SceneManager {
      * Smallest size the window can be resized to, in pixels, including the window frame.
      *
      * Now that every scene lays itself out with containers rather than fixed coordinates, the point at which
-     * content actually stops fitting is much lower than it was: measured across the six scenes, the largest
-     * layout minimum is 505px wide (the list plus fixed-width form in transactionOptions) and 567px tall (the
-     * two stacked panels in accountSettings). These values clear both, with headroom so that the four summary
-     * tiles in analyticsDashboard still read comfortably rather than merely avoiding a clip.
+     * content actually stops fitting is set by the content itself. Measured across the six scenes, the largest
+     * layout minimums are 505px wide (the list plus fixed-width form in transactionOptions) and 629px tall
+     * (the two stacked panels in accountSettings, the one scene whose body does not scroll).
+     *
+     * These values clear both once the window frame is accounted for, which costs roughly 16px of width and
+     * 39px of height on Windows. Width has headroom beyond the minimum so the four summary tiles in
+     * analyticsDashboard still read comfortably rather than merely avoiding a clip.
      */
     private static final double MIN_WIDTH = 720;
-    private static final double MIN_HEIGHT = 640;
+    private static final double MIN_HEIGHT = 680;
 
     /**
      * This method sets the static stage reference to the passed stage parameter, and applies the window size

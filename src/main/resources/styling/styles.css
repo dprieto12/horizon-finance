@@ -143,6 +143,10 @@
  * a controller creates at runtime, which is why the width is set here rather than in FXML: the account
  * buttons in chooseAccount are built by ChooseAccountController and have no FXML element to carry it.
  */
+.button-stack {
+    -fx-spacing: 8px;
+}
+
 .button-stack > .button {
     -fx-max-width: infinity;
     -fx-alignment: CENTER_LEFT;
@@ -218,6 +222,44 @@
     -fx-text-fill: -color-fg-default;
 }
 
+/* Icons ------------------------------------------------------------------------------------------------ */
+
+/*
+ * Icons are plain Regions whose outline comes from -fx-shape. That needs no icon library and no image files,
+ * and it means an icon takes its color from the theme like any other element rather than being baked in.
+ *
+ * Each path is drawn in a 24x24 box and scaled to the region. Where an icon has a hole -- the coin in the
+ * banknote, the bore of the gear -- the inner contour is wound in the opposite direction to the outline,
+ * which is what cuts it out under JavaFX's default nonzero fill rule. Reversing one of those windings would
+ * silently fill the hole in, so the two directions have to stay opposed.
+ */
+.tile-icon {
+    -fx-background-color: -color-fg-default;
+    -fx-min-width: 30px;
+    -fx-min-height: 30px;
+    -fx-max-width: 30px;
+    -fx-max-height: 30px;
+    -fx-scale-shape: true;
+}
+
+/* Banknote with a coin cut out of the middle. */
+.icon-money {
+    -fx-shape: "M2 6 L22 6 L22 18 L2 18 Z M15.4 12 L15.23 10.95 L14.75 10 L14 9.25 L13.05 8.77 L12 8.6 L10.95 8.77 L10 9.25 L9.25 10 L8.77 10.95 L8.6 12 L8.77 13.05 L9.25 14 L10 14.75 L10.95 15.23 L12 15.4 L13.05 15.23 L14 14.75 L14.75 14 L15.23 13.05 Z";
+    -fx-min-width: 48px;
+    -fx-max-width: 48px;
+}
+
+/* Three ascending bars. */
+.icon-chart {
+    -fx-shape: "M3 14 L7 14 L7 21 L3 21 Z M10 9 L14 9 L14 21 L10 21 Z M17 4 L21 4 L21 21 L17 21 Z";
+}
+
+/* Eight-toothed gear with a central bore. */
+.icon-gear {
+    -fx-shape: "M19.31 9.91 L22.86 10.28 L22.86 13.72 L19.31 14.09 L18.65 15.68 L20.9 18.47 L18.47 20.9 L15.68 18.65 L14.09 19.31 L13.72 22.86 L10.28 22.86 L9.91 19.31 L8.32 18.65 L5.53 20.9 L3.1 18.47 L5.35 15.68 L4.69 14.09 L1.14 13.72 L1.14 10.28 L4.69 9.91 L5.35 8.32 L3.1 5.53 L5.53 3.1 L8.32 5.35 L9.91 4.69 L10.28 1.14 L13.72 1.14 L14.09 4.69 L15.68 5.35 L18.47 3.1 L20.9 5.53 L18.65 8.32 Z M16 12 L15.86 10.96 L15.46 10 L14.83 9.17 L14 8.54 L13.04 8.14 L12 8 L10.96 8.14 L10 8.54 L9.17 9.17 L8.54 10 L8.14 10.96 L8 12 L8.14 13.04 L8.54 14 L9.17 14.83 L10 15.46 L10.96 15.86 L12 16 L13.04 15.86 L14 15.46 L14.83 14.83 L15.46 14 L15.86 13.04 Z";
+}
+
+
 /*
  * A single figure with a caption beneath it, used for the analytics summary totals. Compose as a VBox
  * carrying .stat-tile with a .stat-value and a .stat-label inside. The two inner classes are deliberately
@@ -278,6 +320,94 @@
     -fx-font-size: 13px;
     -fx-padding: 4px 0 0 0;
 }
+
+
+/* Accounts ------------------------------------------------------------------------------------------- */
+
+/*
+ * Every account stores a palette index, which selects one of the eight .account-color-N classes below. An
+ * index is stored rather than a literal color so the palette resolves from the active theme's chart ramp:
+ * changing theme recolors every account, and the database stays free of theme-specific values.
+ *
+ * Each color drives two things -- the tile's outline and the dot before its name -- so both are defined
+ * together per color, and .swatch-N reuses the same value for the picker in the create-account form.
+ */
+.button.account-tile {
+    -fx-background-color: -horizon-surface;
+    -fx-background-radius: 8px;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-graphic-text-gap: 12px;
+    -fx-padding: 12px 14px;
+    -fx-cursor: hand;
+}
+
+.button.account-tile:hover {
+    -fx-background-color: -color-bg-inset;
+}
+
+/* Dot shown before the account name, carried as the button's graphic. */
+.account-dot {
+    -fx-min-width: 12px;
+    -fx-min-height: 12px;
+    -fx-max-width: 12px;
+    -fx-max-height: 12px;
+    -fx-background-radius: 6px;
+}
+
+/*
+ * One selectable color in the create-account form. The fill comes from the .swatch-N class beside this one;
+ * the border is transparent until selected, so selection reads as a ring rather than a color change.
+ */
+.toggle-button.swatch {
+    -fx-min-width: 30px;
+    -fx-min-height: 30px;
+    -fx-max-width: 30px;
+    -fx-max-height: 30px;
+    -fx-background-radius: 15px;
+    -fx-border-radius: 15px;
+    -fx-border-width: 2px;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.toggle-button.swatch:selected {
+    -fx-border-color: -color-fg-default;
+}
+
+.account-color-1 { -fx-border-color: -color-chart-1; }
+.account-color-1 .account-dot { -fx-background-color: -color-chart-1; }
+.toggle-button.swatch-1 { -fx-background-color: -color-chart-1; }
+
+.account-color-2 { -fx-border-color: -color-chart-2; }
+.account-color-2 .account-dot { -fx-background-color: -color-chart-2; }
+.toggle-button.swatch-2 { -fx-background-color: -color-chart-2; }
+
+.account-color-3 { -fx-border-color: -color-chart-3; }
+.account-color-3 .account-dot { -fx-background-color: -color-chart-3; }
+.toggle-button.swatch-3 { -fx-background-color: -color-chart-3; }
+
+.account-color-4 { -fx-border-color: -color-chart-4; }
+.account-color-4 .account-dot { -fx-background-color: -color-chart-4; }
+.toggle-button.swatch-4 { -fx-background-color: -color-chart-4; }
+
+.account-color-5 { -fx-border-color: -color-chart-5; }
+.account-color-5 .account-dot { -fx-background-color: -color-chart-5; }
+.toggle-button.swatch-5 { -fx-background-color: -color-chart-5; }
+
+.account-color-6 { -fx-border-color: -color-chart-6; }
+.account-color-6 .account-dot { -fx-background-color: -color-chart-6; }
+.toggle-button.swatch-6 { -fx-background-color: -color-chart-6; }
+
+.account-color-7 { -fx-border-color: -color-chart-7; }
+.account-color-7 .account-dot { -fx-background-color: -color-chart-7; }
+.toggle-button.swatch-7 { -fx-background-color: -color-chart-7; }
+
+.account-color-8 { -fx-border-color: -color-chart-8; }
+.account-color-8 .account-dot { -fx-background-color: -color-chart-8; }
+.toggle-button.swatch-8 { -fx-background-color: -color-chart-8; }
 
 
 /* Charts ----------------------------------------------------------------------------------------------- */

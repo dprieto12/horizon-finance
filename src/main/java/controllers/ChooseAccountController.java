@@ -3,6 +3,7 @@ package controllers;
 import database.DatabaseManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import models.Account;
 import utils.ApplicationState;
@@ -34,18 +35,32 @@ public class ChooseAccountController {
         try {
             ArrayList<Account> accounts = DatabaseManager.getInstance().getAccountList();
             for (Account a : accounts) {
-                Button btn = new Button(a.getAccountName() + " - " + a.getFirstName() + " " + a.getLastName() + " - $"
-                        + String.format("%.2f", a.getBalance()));
-                btn.setOnAction(e -> chooseAccount(a));
-                accountContainer.getChildren().add(btn);
+                accountContainer.getChildren().add(createAccountTile(a));
             }
-            Button createAccountButton = new Button("Create new account");
-            createAccountButton.setOnAction(e -> createAccount());
-            accountContainer.getChildren().add(createAccountButton);
         } catch (Exception e) {
             System.err.println("Error initializing ChooseAccountController: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Builds the button for a single account. The account's stored palette index selects an .account-color-N
+     * class, which styles both the tile's outline and the dot carried as its graphic, so the color lives in
+     * styles.css and follows the theme rather than being set here.
+     * @param account Account the tile represents
+     * @return Button that selects the account when pressed
+     */
+    private Button createAccountTile(Account account) {
+        Button tile = new Button(account.getAccountName() + " - " + account.getFirstName() + " "
+                + account.getLastName() + " - $" + String.format("%.2f", account.getBalance()));
+
+        Region colorDot = new Region();
+        colorDot.getStyleClass().add("account-dot");
+        tile.setGraphic(colorDot);
+
+        tile.getStyleClass().addAll("account-tile", "account-color-" + account.getColor());
+        tile.setOnAction(e -> chooseAccount(account));
+        return tile;
     }
 
     private void chooseAccount(Account a) {
@@ -58,6 +73,8 @@ public class ChooseAccountController {
         }
     }
 
+    /** Bound to the create button in chooseAccount.fxml, which sits outside the scrolling account list. */
+    @FXML
     private void createAccount() {
         try {
             SceneManager.switchScene("/fxml/createAccount.fxml");

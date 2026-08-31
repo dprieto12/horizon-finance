@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.BorderPane?>
@@ -7,24 +8,31 @@
 
 <BorderPane prefHeight="700.0" prefWidth="1100.0" styleClass="page" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ChooseAccountController">
    <center>
-      <!-- Scrolls only when the account list outgrows the window; .plain keeps it visually invisible. -->
-      <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" styleClass="plain" BorderPane.alignment="CENTER">
-         <content>
-            <VBox alignment="CENTER" spacing="24.0">
+      <VBox alignment="CENTER" spacing="24.0" BorderPane.alignment="CENTER">
+         <children>
+            <VBox alignment="CENTER" maxWidth="460.0" spacing="4.0">
                <children>
-                  <VBox alignment="CENTER" maxWidth="460.0" spacing="4.0">
-                     <children>
-                        <Label styleClass="page-title" text="Horizon Finance" />
-                        <Label styleClass="page-subtitle" text="Select or create an account:" />
-                     </children>
-                  </VBox>
-
-                  <!-- ChooseAccountController fills this with one button per account, plus a create button.
-                       The .button-stack rule in styles.css is what sizes those runtime-created buttons. -->
-                  <VBox fx:id="accountContainer" maxWidth="460.0" styleClass="panel, button-stack" />
+                  <Label styleClass="page-title" text="Horizon Finance" />
+                  <Label styleClass="page-subtitle" text="Select or create an account:" />
                </children>
             </VBox>
-         </content>
-      </ScrollPane>
+
+            <VBox maxWidth="460.0" styleClass="panel">
+               <children>
+                  <!-- Fixed-height scrolling box: however many accounts exist, the panel stays the same size
+                       and the list scrolls inside it, so the create button below never moves off screen. -->
+                  <ScrollPane fitToWidth="true" hbarPolicy="NEVER" maxHeight="320.0" prefHeight="320.0" styleClass="plain">
+                     <content>
+                        <!-- ChooseAccountController fills this with one tile per account. The .button-stack
+                             rule in styles.css is what sizes those runtime-created buttons. -->
+                        <VBox fx:id="accountContainer" styleClass="button-stack" />
+                     </content>
+                  </ScrollPane>
+
+                  <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#createAccount" styleClass="accent" text="Create new account" />
+               </children>
+            </VBox>
+         </children>
+      </VBox>
    </center>
 </BorderPane>

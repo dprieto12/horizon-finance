@@ -14,10 +14,10 @@ public class TestDataGenerator {
     public static void main(String[] args) {
         DatabaseManager db = DatabaseManager.getInstance();
         
-        // Create 3 test accounts
-        int account1 = createAccount(db, "Personal Checking", "John", "Doe", 5000.00);
-        int account2 = createAccount(db, "Business Savings", "Jane", "Smith", 15000.00);
-        int account3 = createAccount(db, "Student Account", "Alex", "Johnson", 1200.00);
+        // Create 3 test accounts with different colors
+        int account1 = createAccount(db, "Personal Checking", "John", "Doe", 5000.00, 1);
+        int account2 = createAccount(db, "Business Savings", "Jane", "Smith", 15000.00, 2);
+        int account3 = createAccount(db, "Student Account", "Alex", "Johnson", 1200.00, 3);
         
         System.out.println("Created 3 accounts with IDs: " + account1 + ", " + account2 + ", " + account3);
         
@@ -33,8 +33,8 @@ public class TestDataGenerator {
         System.out.println("Test data generation complete!");
     }
     
-    private static int createAccount(DatabaseManager db, String accountName, String firstName, String lastName, double balance) {
-        db.createNewAccount(accountName, firstName, lastName, balance);
+    private static int createAccount(DatabaseManager db, String accountName, String firstName, String lastName, double balance, int color) {
+        db.createNewAccount(accountName, firstName, lastName, balance, color);
         // Get the account ID by fetching the most recently created account
         var accounts = db.getAccountList();
         return accounts.get(accounts.size() - 1).getAccountID();

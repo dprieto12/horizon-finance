@@ -16,6 +16,17 @@ public class Account {
     private String first_name;
     private String last_name;
     private double balance;
+    private int color;
+
+    /**
+     * Number of colors an account can be given. Colors are stored as an index rather than as a literal value
+     * so that the palette itself lives in styles.css (.account-color-1 through .account-color-8, drawn from
+     * the active theme) and the database stays independent of whichever theme is applied.
+     */
+    public static final int COLOR_COUNT = 8;
+
+    /** Color used when none was chosen, including for accounts created before colors existed. */
+    public static final int DEFAULT_COLOR = 1;
 
     /**
      * Given all account data, creates an Account object and assigns each parameter to its fields.
@@ -24,13 +35,28 @@ public class Account {
      * @param first_name   User First Name ("John")
      * @param last_name    User Last Name ("Doe")
      * @param balance      Account Balance (1000.00)
+     * @param color        Palette index from 1 to COLOR_COUNT
      */
-    public Account(int account_id, String account_name, String first_name, String last_name, double balance) {
+    public Account(int account_id, String account_name, String first_name, String last_name, double balance,
+                   int color) {
         this.account_id = account_id;
         setAccountName(account_name);
         setFirstName(first_name);
         setLastName(last_name);
         this.balance = balance;
+        setColor(color);
+    }
+
+    /**
+     * Creates an Account with the default color, for callers that have no color to supply.
+     * @param account_id   Account ID (22)
+     * @param account_name Account Name ("Checking")
+     * @param first_name   User First Name ("John")
+     * @param last_name    User Last Name ("Doe")
+     * @param balance      Account Balance (1000.00)
+     */
+    public Account(int account_id, String account_name, String first_name, String last_name, double balance) {
+        this(account_id, account_name, first_name, last_name, balance, DEFAULT_COLOR);
     }
 
     /**
@@ -81,6 +107,21 @@ public class Account {
      * @return balance
      */
     public double getBalance() { return balance; }
+
+    /**
+     * Returns the account's palette index, used to pick its .account-color-N style class.
+     * @return color
+     */
+    public int getColor() { return color; }
+
+    /**
+     * Sets the account's palette index. Values outside the palette fall back to the default rather than being
+     * stored as-is, so a stale or hand-edited database value cannot leave a tile with no color styling.
+     * @param color Palette index from 1 to COLOR_COUNT
+     */
+    public void setColor(int color) {
+        this.color = (color < 1 || color > COLOR_COUNT) ? DEFAULT_COLOR : color;
+    }
 
     /**
      * Displays the Account in a readable format.

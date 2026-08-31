@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane prefHeight="700.0" prefWidth="1100.0" styleClass="page" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.DashboardController">
@@ -28,12 +29,26 @@
                <children>
                   <Label styleClass="section-title" text="Actions" />
 
-                  <!-- Equal-width tiles: each grows with the window instead of carrying its own hardcoded size. -->
+                  <!-- Equal-width tiles: each grows with the window instead of carrying its own hardcoded
+                       size. The icons are Regions shaped by CSS, so they inherit the theme's text color and
+                       need no image files. .action-tile sets contentDisplay TOP, putting each above its label. -->
                   <HBox alignment="CENTER" spacing="16.0">
                      <children>
-                        <Button fx:id="transactionsButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#viewTransactions" styleClass="action-tile" text="Transactions" HBox.hgrow="ALWAYS" />
-                        <Button fx:id="analyticsButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#viewAnalytics" styleClass="action-tile" text="Analytics" HBox.hgrow="ALWAYS" />
-                        <Button fx:id="accountButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#viewAccount" styleClass="action-tile" text="Account" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="transactionsButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#viewTransactions" styleClass="action-tile" text="Transactions" HBox.hgrow="ALWAYS">
+                           <graphic>
+                              <Region styleClass="tile-icon, icon-money" />
+                           </graphic>
+                        </Button>
+                        <Button fx:id="analyticsButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#viewAnalytics" styleClass="action-tile" text="Analytics" HBox.hgrow="ALWAYS">
+                           <graphic>
+                              <Region styleClass="tile-icon, icon-chart" />
+                           </graphic>
+                        </Button>
+                        <Button fx:id="accountButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#viewAccount" styleClass="action-tile" text="Account" HBox.hgrow="ALWAYS">
+                           <graphic>
+                              <Region styleClass="tile-icon, icon-gear" />
+                           </graphic>
+                        </Button>
                      </children>
                   </HBox>
                </children>
