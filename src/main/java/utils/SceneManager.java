@@ -1,7 +1,6 @@
 package utils;
 
 import com.sun.jna.Native;
-import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.ptr.IntByReference;
@@ -60,6 +59,14 @@ public class SceneManager {
     }
 
     /**
+     * Returns the static stage reference.
+     * @return The current Stage object
+     */
+    public static Stage getStage() {
+        return stage;
+    }
+
+    /**
      * Switches the current scene to the one specified by the passed FXML path.
      * @param FXMLPath Filepath to the FXML file to load
      * @throws IOException Occurs if the FXML file cannot be loaded
@@ -99,12 +106,17 @@ public class SceneManager {
 
     /**
      * Sets the Windows title bar to dark mode using native Windows APIs.
+     * Public method so it can be called on Alert dialogs as well.
      */
-    private static void setDarkTitleBar(Stage stage) {
+    public static void setDarkTitleBar(javafx.stage.Window window) {
+        if (!isWindows()) {
+            return;
+        }
+        
         try {
             System.out.println("Attempting to set dark title bar...");
             // Get the native window handle
-            WinDef.HWND hwnd = getNativeWindowHandle(stage);
+            WinDef.HWND hwnd = getNativeWindowHandle(window);
             
             if (hwnd != null) {
                 System.out.println("Found window handle: " + hwnd);
@@ -126,12 +138,22 @@ public class SceneManager {
     }
 
     /**
-     * Gets the native window handle for a JavaFX Stage.
+     * Sets the Windows title bar to dark mode using native Windows APIs.
      */
-    private static WinDef.HWND getNativeWindowHandle(Stage stage) {
+    private static void setDarkTitleBar(Stage stage) {
+        setDarkTitleBar((javafx.stage.Window) stage);
+    }
+
+    /**
+     * Gets the native window handle for a JavaFX Window.
+     */
+    private static WinDef.HWND getNativeWindowHandle(javafx.stage.Window window) {
         try {
             // Use User32 to find the window by title
-            String title = stage.getTitle();
+            String title = null;
+            if (window instanceof Stage) {
+                title = ((Stage) window).getTitle();
+            }
             System.out.println("Looking for window with title: " + title);
             if (title == null || title.isEmpty()) {
                 System.err.println("Window title is null or empty");

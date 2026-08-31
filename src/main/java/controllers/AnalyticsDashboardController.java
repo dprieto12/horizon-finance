@@ -121,6 +121,7 @@ public class AnalyticsDashboardController {
 
         updateAccountInfoLabel();
         bindResponsiveSpacing();
+        restrictDatePickersToToday();
         try {
             getAllTime();
         } catch (SQLException e) {
@@ -138,6 +139,28 @@ public class AnalyticsDashboardController {
         NumberBinding spacing = Bindings.max(16, analyticsScrollPane.widthProperty().multiply(0.018));
         mainVBox.spacingProperty().bind(spacing);
         pieChartRow.spacingProperty().bind(spacing);
+    }
+
+    /**
+     * Restricts both DatePickers to only allow selecting dates up to today.
+     * Future dates will be grayed out and unselectable.
+     */
+    private void restrictDatePickersToToday() {
+        LocalDate today = LocalDate.now();
+        fromDatePicker.setDayCellFactory(dp -> new javafx.scene.control.DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(empty || date.isAfter(today));
+            }
+        });
+        toDatePicker.setDayCellFactory(dp -> new javafx.scene.control.DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(empty || date.isAfter(today));
+            }
+        });
     }
 
     /**

@@ -97,6 +97,14 @@ public class AccountSettingsController {
                 " " + ApplicationState.getCurrentAccount().getLastName());
         accountDeletionAlert.setContentText("This action cannot be undone.");
 
+        // Apply dark title bar to the alert dialog
+        accountDeletionAlert.initOwner(SceneManager.getStage());
+        accountDeletionAlert.getDialogPane().getScene().getWindow().showingProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal) {
+                SceneManager.setDarkTitleBar(accountDeletionAlert.getDialogPane().getScene().getWindow());
+            }
+        });
+
         // Show the alert and wait for user response
         accountDeletionAlert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.YES) {

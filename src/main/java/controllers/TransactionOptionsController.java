@@ -62,6 +62,9 @@ public class TransactionOptionsController {
         // Initialize category combo box
         categoryComboBox.setItems(FXCollections.observableArrayList(Transaction.purchaseCategories));
 
+        // Restrict date picker to today or earlier
+        restrictDatePickerToToday();
+
         // Set default date to today
         datePicker.setValue(LocalDate.now());
 
@@ -127,6 +130,21 @@ public class TransactionOptionsController {
                         }
                     }
                 };
+            }
+        });
+    }
+
+    /**
+     * Restricts the DatePicker to only allow selecting dates up to today.
+     * Future dates will be grayed out and unselectable.
+     */
+    private void restrictDatePickerToToday() {
+        LocalDate today = LocalDate.now();
+        datePicker.setDayCellFactory(dp -> new javafx.scene.control.DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(empty || date.isAfter(today));
             }
         });
     }
