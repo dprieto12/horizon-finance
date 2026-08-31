@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="700.0" prefWidth="1100.0" styleClass="page" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.DashboardController">
+<BorderPane prefHeight="700.0" prefWidth="1100.0" styleClass="page" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.DashboardController">
    <top>
       <HBox styleClass="page-header" BorderPane.alignment="CENTER">
          <children>
@@ -18,16 +18,15 @@
    <center>
       <VBox alignment="CENTER" spacing="32.0" BorderPane.alignment="CENTER">
          <children>
-            <VBox alignment="CENTER" spacing="6.0">
+            <VBox alignment="CENTER" spacing="6.0" translateY="-30.0">
                <children>
                   <Label fx:id="welcomeBackLabel" styleClass="page-title" text="Welcome back, User!" />
                   <Label fx:id="accountBalanceLabel" styleClass="page-subtitle" text="Account Balance: \$xxx.xx" />
                </children>
             </VBox>
 
-            <VBox alignment="CENTER" maxWidth="880.0" spacing="12.0">
+            <VBox alignment="CENTER" maxWidth="1100.0" prefHeight="54.0" prefWidth="1100.0" spacing="12.0">
                <children>
-                  <Label styleClass="section-title" text="Actions" />
 
                   <!-- Equal-width tiles: each grows with the window instead of carrying its own hardcoded
                        size. The icons are Regions shaped by CSS, so they inherit the theme's text color and
@@ -44,7 +43,7 @@
                               <Region styleClass="tile-icon, icon-chart" />
                            </graphic>
                         </Button>
-                        <Button fx:id="accountButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#viewAccount" styleClass="action-tile" text="Account" HBox.hgrow="ALWAYS">
+                        <Button fx:id="accountButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#viewAccount" styleClass="action-tile" text="Settings" HBox.hgrow="ALWAYS">
                            <graphic>
                               <Region styleClass="tile-icon, icon-gear" />
                            </graphic>

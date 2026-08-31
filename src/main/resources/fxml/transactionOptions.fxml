@@ -12,16 +12,19 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="700.0" prefWidth="1100.0" styleClass="page" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.TransactionOptionsController">
+<BorderPane prefHeight="700.0" prefWidth="1100.0" styleClass="page" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.TransactionOptionsController">
    <top>
-      <HBox styleClass="page-header" BorderPane.alignment="CENTER">
-         <children>
-            <Button mnemonicParsing="false" onAction="#goBack" styleClass="back-button" text="&lt; Dashboard" />
-            <Label styleClass="page-title" text="Transaction Manager" />
-         </children>
-      </HBox>
+      <BorderPane styleClass="page-header" BorderPane.alignment="CENTER">
+         <left>
+            <Button mnemonicParsing="false" onAction="#goBack" styleClass="back-button" text="&lt; Dashboard" BorderPane.alignment="CENTER_LEFT" />
+         </left>
+         <center>
+            <Label styleClass="page-title" text="Transaction Manager" BorderPane.alignment="CENTER" />
+         </center>
+      </BorderPane>
    </top>
    <center>
       <HBox spacing="20.0" BorderPane.alignment="CENTER">
@@ -41,44 +44,56 @@
             </VBox>
 
             <!-- Right pane: fixed-width form, so the list absorbs window resizing rather than the inputs. -->
-            <VBox maxWidth="360.0" minWidth="360.0" prefWidth="360.0" styleClass="panel">
+            <VBox alignment="TOP_CENTER" maxWidth="360.0" minWidth="360.0" prefWidth="360.0" spacing="20.0">
                <children>
-                  <Label styleClass="section-title" text="Add New Transaction" />
-
-                  <GridPane styleClass="form-grid">
-                     <columnConstraints>
-                        <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="-Infinity" />
-                        <ColumnConstraints hgrow="ALWAYS" />
-                     </columnConstraints>
+                  <VBox alignment="CENTER" maxHeight="400.0" maxWidth="360.0" minWidth="360.0" prefHeight="200.0" prefWidth="360.0" styleClass="panel" translateY="90.0">
                      <children>
-                        <Label styleClass="field-label" text="Amount:" />
-                        <TextField fx:id="amountTextField" maxWidth="Infinity" promptText="0.00" GridPane.columnIndex="1" />
+                        <Label styleClass="section-title" text="Add New Transaction" />
 
-                        <HBox alignment="CENTER_LEFT" spacing="16.0" GridPane.columnSpan="2" GridPane.rowIndex="1">
+                        <GridPane styleClass="form-grid">
+                           <columnConstraints>
+                              <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="-Infinity" />
+                              <ColumnConstraints hgrow="ALWAYS" />
+                           </columnConstraints>
                            <children>
-                              <RadioButton fx:id="expenseRadioButton" mnemonicParsing="false" selected="true" text="Expense">
-                                 <toggleGroup>
-                                    <ToggleGroup fx:id="transactionTypeToggleGroup" />
-                                 </toggleGroup>
-                              </RadioButton>
-                              <RadioButton fx:id="incomeRadioButton" mnemonicParsing="false" text="Income" toggleGroup="$transactionTypeToggleGroup" />
+                              <Label styleClass="field-label" text="Amount:" />
+                              <TextField fx:id="amountTextField" maxWidth="Infinity" promptText="0.00" GridPane.columnIndex="1" />
+
+                              <HBox alignment="CENTER_LEFT" spacing="16.0" GridPane.columnSpan="2" GridPane.rowIndex="1">
+                                 <children>
+                                    <RadioButton fx:id="expenseRadioButton" mnemonicParsing="false" selected="true" text="Expense">
+                                       <toggleGroup>
+                                          <ToggleGroup fx:id="transactionTypeToggleGroup" />
+                                       </toggleGroup>
+                                    </RadioButton>
+                                    <RadioButton fx:id="incomeRadioButton" mnemonicParsing="false" text="Income" toggleGroup="$transactionTypeToggleGroup" />
+                                 </children>
+                              </HBox>
+
+                              <Label styleClass="field-label" text="Type:" GridPane.rowIndex="2" />
+                              <ComboBox fx:id="typeComboBox" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                              <Label styleClass="field-label" text="Category:" GridPane.rowIndex="3" />
+                              <ComboBox fx:id="categoryComboBox" disable="true" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                              <Label styleClass="field-label" text="Date:" GridPane.rowIndex="4" />
+                              <DatePicker fx:id="datePicker" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                            </children>
-                        </HBox>
+                           <rowConstraints>
+                              <RowConstraints />
+                              <RowConstraints />
+                              <RowConstraints />
+                              <RowConstraints />
+                              <RowConstraints />
+                           </rowConstraints>
+                        </GridPane>
 
-                        <Label styleClass="field-label" text="Type:" GridPane.rowIndex="2" />
-                        <ComboBox fx:id="typeComboBox" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-
-                        <Label styleClass="field-label" text="Category:" GridPane.rowIndex="3" />
-                        <ComboBox fx:id="categoryComboBox" disable="true" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-
-                        <Label styleClass="field-label" text="Date:" GridPane.rowIndex="4" />
-                        <DatePicker fx:id="datePicker" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                        <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#addTransaction" styleClass="accent" text="Add Transaction" />
+                        <Label fx:id="errorMessageLabel" styleClass="error-label" visible="false" />
                      </children>
-                  </GridPane>
+                  </VBox>
 
-                  <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#addTransaction" styleClass="accent" text="Add Transaction" />
-                  <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#deleteTransaction" styleClass="danger" text="Delete Selected" />
-                  <Label fx:id="errorMessageLabel" styleClass="error-label" visible="false" />
+                  <Button maxWidth="Infinity" mnemonicParsing="false" onAction="#deleteTransaction" styleClass="danger" text="Delete Selected" translateY="100.0" />
                </children>
             </VBox>
          </children>

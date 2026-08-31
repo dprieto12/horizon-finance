@@ -11,6 +11,7 @@
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <BorderPane prefHeight="700.0" prefWidth="1100.0" styleClass="page" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.CreateAccountController">
@@ -26,74 +27,88 @@
            rather than clipping when the window is small. -->
       <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" styleClass="plain" BorderPane.alignment="CENTER">
          <content>
-      <VBox alignment="CENTER" maxWidth="520.0" spacing="20.0">
-         <children>
-            <VBox alignment="CENTER" spacing="4.0">
+            <StackPane alignment="CENTER">
                <children>
-                  <Label styleClass="page-title" text="Create Account" />
-                  <Label styleClass="page-subtitle" text="Enter the following fields:" />
-               </children>
-            </VBox>
-
-            <VBox styleClass="panel">
-               <children>
-                  <GridPane styleClass="form-grid">
-                     <columnConstraints>
-                        <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="-Infinity" />
-                        <ColumnConstraints hgrow="ALWAYS" />
-                     </columnConstraints>
+                  <VBox alignment="CENTER" maxWidth="520.0" spacing="20.0">
                      <children>
-                        <Label styleClass="field-label" text="First Name:" />
-                        <TextField fx:id="firstNameTextField" maxWidth="Infinity" promptText="John" GridPane.columnIndex="1" />
-
-                        <Label styleClass="field-label" text="Last Name:" GridPane.rowIndex="1" />
-                        <TextField fx:id="lastNameTextField" maxWidth="Infinity" promptText="Doe" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-
-                        <Label styleClass="field-label" text="Account Name:" GridPane.rowIndex="2" />
-                        <TextField fx:id="accountNameTextField" maxWidth="Infinity" promptText="Savings" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-
-                        <Label styleClass="field-label" text="Balance:" GridPane.rowIndex="3" />
-
-                        <!-- Dollars and cents stay two fields because the controller parses them separately,
-                             but the separators now sit in the flow instead of being placed by coordinate. -->
-                        <HBox alignment="CENTER_LEFT" spacing="4.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                        <VBox alignment="CENTER" spacing="4.0">
                            <children>
-                              <Label styleClass="field-label" text="\$" />
-                              <TextField fx:id="dollarTextField" prefWidth="110.0" promptText="123" />
-                              <Label styleClass="field-label" text="." />
-                              <TextField fx:id="centTextField" prefWidth="52.0" promptText="45" />
+                              <Label styleClass="page-title" text="Create Account" />
+                              <Label styleClass="page-subtitle" text="Enter the following fields:" />
                            </children>
-                        </HBox>
+                        </VBox>
 
-                        <Label styleClass="field-label" text="Color:" GridPane.rowIndex="4" />
-
-                        <!-- Each swatch carries its palette index as userData; the controller reads it from
-                             the selected toggle. A FlowPane so the row wraps rather than clipping. -->
-                        <FlowPane styleClass="toolbar" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                        <VBox alignment="CENTER" styleClass="panel">
                            <children>
-                              <ToggleButton fx:id="colorSwatch1" mnemonicParsing="false" selected="true" styleClass="swatch, swatch-1" userData="1">
-                                 <toggleGroup>
-                                    <ToggleGroup fx:id="colorToggleGroup" />
-                                 </toggleGroup>
-                              </ToggleButton>
-                              <ToggleButton mnemonicParsing="false" styleClass="swatch, swatch-2" toggleGroup="$colorToggleGroup" userData="2" />
-                              <ToggleButton mnemonicParsing="false" styleClass="swatch, swatch-3" toggleGroup="$colorToggleGroup" userData="3" />
-                              <ToggleButton mnemonicParsing="false" styleClass="swatch, swatch-4" toggleGroup="$colorToggleGroup" userData="4" />
-                              <ToggleButton mnemonicParsing="false" styleClass="swatch, swatch-5" toggleGroup="$colorToggleGroup" userData="5" />
-                              <ToggleButton mnemonicParsing="false" styleClass="swatch, swatch-6" toggleGroup="$colorToggleGroup" userData="6" />
-                              <ToggleButton mnemonicParsing="false" styleClass="swatch, swatch-7" toggleGroup="$colorToggleGroup" userData="7" />
-                              <ToggleButton mnemonicParsing="false" styleClass="swatch, swatch-8" toggleGroup="$colorToggleGroup" userData="8" />
+                              <VBox spacing="12.0">
+                                 <children>
+                                    <HBox alignment="CENTER" spacing="8.0">
+                                       <children>
+                                          <Label styleClass="field-label" text="First Name:" />
+                                          <TextField fx:id="firstNameTextField" promptText="John" />
+                                       </children>
+                                    </HBox>
+
+                                    <HBox alignment="CENTER" spacing="8.0">
+                                       <children>
+                                          <Label styleClass="field-label" text="Last Name:" />
+                                          <TextField fx:id="lastNameTextField" promptText="Doe" />
+                                       </children>
+                                    </HBox>
+
+                                    <HBox alignment="CENTER" spacing="8.0">
+                                       <children>
+                                          <Label styleClass="field-label" text="Account Name:" />
+                                          <TextField fx:id="accountNameTextField" promptText="Savings" />
+                                       </children>
+                                    </HBox>
+
+                                    <HBox alignment="CENTER" spacing="8.0">
+                                       <children>
+                                          <Label styleClass="field-label" text="Balance:" />
+                                          <HBox alignment="CENTER" spacing="4.0">
+                                             <children>
+                                                <Label styleClass="field-label" text="\$" />
+                                                <TextField fx:id="dollarTextField" prefWidth="110.0" promptText="123" />
+                                                <Label styleClass="field-label" text="." />
+                                                <TextField fx:id="centTextField" prefWidth="52.0" promptText="45" />
+                                             </children>
+                                          </HBox>
+                                       </children>
+                                    </HBox>
+
+                                    <HBox alignment="CENTER" spacing="8.0">
+                                       <children>
+                                          <Label styleClass="field-label" text="Color:" />
+                                          <FlowPane styleClass="toolbar">
+                                             <children>
+                                                <ToggleButton fx:id="colorSwatch1" mnemonicParsing="false" selected="true" styleClass="swatch, swatch-1" userData="1">
+                                                   <toggleGroup>
+                                                      <ToggleGroup fx:id="colorToggleGroup" />
+                                                   </toggleGroup>
+                                                </ToggleButton>
+                                                <ToggleButton mnemonicParsing="false" styleClass="swatch, swatch-2" toggleGroup="$colorToggleGroup" userData="2" />
+                                                <ToggleButton mnemonicParsing="false" styleClass="swatch, swatch-3" toggleGroup="$colorToggleGroup" userData="3" />
+                                                <ToggleButton mnemonicParsing="false" styleClass="swatch, swatch-4" toggleGroup="$colorToggleGroup" userData="4" />
+                                                <ToggleButton mnemonicParsing="false" styleClass="swatch, swatch-5" toggleGroup="$colorToggleGroup" userData="5" />
+                                                <ToggleButton mnemonicParsing="false" styleClass="swatch, swatch-6" toggleGroup="$colorToggleGroup" userData="6" />
+                                                <ToggleButton mnemonicParsing="false" styleClass="swatch, swatch-7" toggleGroup="$colorToggleGroup" userData="7" />
+                                                <ToggleButton mnemonicParsing="false" styleClass="swatch, swatch-8" toggleGroup="$colorToggleGroup" userData="8" />
+                                             </children>
+                                          </FlowPane>
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </VBox>
+
+                              <Button fx:id="createAccountButton" mnemonicParsing="false" onAction="#createNewAccount" styleClass="accent" text="Create account" />
+                              <Label fx:id="errorMessageLabel" styleClass="error-label" text="Some fields are not filled." visible="false" />
                            </children>
-                        </FlowPane>
+                        </VBox>
                      </children>
-                  </GridPane>
-
-                  <Button fx:id="createAccountButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#createNewAccount" styleClass="accent" text="Create account" />
-                  <Label fx:id="errorMessageLabel" styleClass="error-label" text="Some fields are not filled." visible="false" />
+                  </VBox>
                </children>
-            </VBox>
-         </children>
-      </VBox>
+            </StackPane>
          </content>
       </ScrollPane>
    </center>
