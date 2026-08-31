@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="700.0" prefWidth="1100.0" styleClass="page" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AccountSettingsController">
+<BorderPane prefHeight="700.0" prefWidth="1100.0" styleClass="page" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AccountSettingsController">
    <top>
       <HBox styleClass="page-header" BorderPane.alignment="CENTER">
          <children>
@@ -29,7 +32,7 @@
 
             <VBox styleClass="panel">
                <children>
-                  <Label styleClass="section-title" text="Edit Account Info" />
+                  <Label styleClass="section-title" text="Edit Account" />
 
                   <GridPane styleClass="form-grid">
                      <columnConstraints>
@@ -46,17 +49,29 @@
                         <Label styleClass="field-label" text="User Last Name:" GridPane.rowIndex="2" />
                         <TextField fx:id="lastNameTextField" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                      </children>
+                     <rowConstraints>
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                     </rowConstraints>
                   </GridPane>
 
                   <Button fx:id="updateAccountButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#updateAccount" styleClass="accent" text="Update Account" />
                   <Label fx:id="fieldsMissingLabel" styleClass="error-label" text="Some fields are missing." visible="false" />
                </children>
             </VBox>
+            <Button fx:id="deleteAccountButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#deleteAccount" styleClass="danger" text="Delete Account">
+               <VBox.margin>
+                  <Insets bottom="10.0" />
+               </VBox.margin>
+            </Button>
 
-            <VBox styleClass="panel">
+            <VBox spacing="20.0" styleClass="panel">
                <children>
-                  <Label styleClass="section-title" text="Other" />
-                  <Button fx:id="deleteAccountButton" maxWidth="Infinity" mnemonicParsing="false" onAction="#deleteAccount" styleClass="danger" text="Delete Account" />
+                  <Label styleClass="section-title" text="About" />
+                  <Label styleClass="field-label" text="Horizon Finance — Version 1.0.0" />
+                  <Label styleClass="field-label" text="Developed by David Prieto — Summer 2026" />
+                  <Hyperlink onAction="#openGitHubPage" text="See Source Code on GitHub" textFill="#81a1c1" />
                </children>
             </VBox>
          </children>

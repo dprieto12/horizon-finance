@@ -2,6 +2,8 @@ package controllers;
 
 import database.DatabaseManager;
 import javafx.scene.control.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import models.Account;
 import utils.ApplicationState;
 import utils.SceneManager;
@@ -9,7 +11,10 @@ import utils.TextFieldUtils;
 
 import javafx.fxml.FXML;
 
+import java.awt.*;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 // TODO: Document
 // TODO: Stylize
@@ -121,5 +126,17 @@ public class AccountSettingsController {
             }
             // If the user clicks NO or closes the alert, they remain on the account settings page
         });
+    }
+
+    public void openGitHubPage() {
+        String url = "https://github.com/dprieto12/horizon-finance";
+
+        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            try {
+                Desktop.getDesktop().browse(new URI(url));
+            } catch (IOException | URISyntaxException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
