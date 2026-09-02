@@ -3,6 +3,8 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
 
@@ -12,6 +14,11 @@
          <children>
             <VBox alignment="CENTER" maxWidth="460.0" spacing="4.0">
                <children>
+                  <ImageView fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/HorizonLogo.png" />
+                     </image>
+                  </ImageView>
                   <Label styleClass="page-title" text="Horizon Finance" />
                   <Label styleClass="page-subtitle" text="Select or create an account:" />
                </children>

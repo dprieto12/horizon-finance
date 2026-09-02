@@ -1,5 +1,6 @@
 import atlantafx.base.theme.*;
 import javafx.application.Application;
+import javafx.scene.image.Image;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import utils.SceneManager;
@@ -40,6 +41,9 @@ public class Main extends Application {
 
         // Set stylizing
         Application.setUserAgentStylesheet(new NordDark().getUserAgentStylesheet());
+
+        // Set window icon
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/HorizonIcon.jpg")));
 
         // Set stage instance and load the initial scene
         SceneManager.setStage(stage);
