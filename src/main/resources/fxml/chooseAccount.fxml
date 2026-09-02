@@ -6,20 +6,25 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="700.0" prefWidth="1100.0" styleClass="page" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ChooseAccountController">
+<BorderPane prefHeight="700.0" prefWidth="1100.0" styleClass="page" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ChooseAccountController">
    <center>
-      <VBox alignment="CENTER" spacing="24.0" BorderPane.alignment="CENTER">
+      <VBox alignment="CENTER" spacing="16.0" BorderPane.alignment="CENTER">
          <children>
-            <VBox alignment="CENTER" maxWidth="460.0" spacing="4.0">
+            <VBox alignment="CENTER" maxWidth="460.0" spacing="32.0">
                <children>
-                  <ImageView fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@../images/HorizonLogo.png" />
-                     </image>
-                  </ImageView>
-                  <Label styleClass="page-title" text="Horizon Finance" />
+                  <HBox alignment="BOTTOM_CENTER" spacing="16.0">
+                     <children>
+                        <ImageView fitHeight="80.0" fitWidth="80.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../images/HorizonLogo.png" />
+                           </image>
+                        </ImageView>
+                        <Label styleClass="page-title" text="Horizon Finance" />
+                     </children>
+                  </HBox>
                   <Label styleClass="page-subtitle" text="Select or create an account:" />
                </children>
             </VBox>
