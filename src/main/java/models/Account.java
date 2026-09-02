@@ -1,14 +1,16 @@
 package models;
 
-// TODO: Review documentation for this class
-
 /**
- * Class representing Accounts, holding only account info and no transaction data. Used by Main and DatabaseManager
- * in order to communicate data between the client and the database. DatabaseManager converts SQL data stored in the
- * accounts table to Account objects and uses altered Account objects to update the SQL database.
+ * <p>Class representing Accounts, holding only account info and no transaction data. Used by Controllers and
+ * DatabaseManager in order to communicate data between the client and the database. DatabaseManager converts SQL data
+ * stored in the accounts table to Account objects and uses altered Account objects to update the SQL database.</p>
  *
- * NOTE: Balance is set on account creation via an initial balance and is subsequently only modified by transactions.
- * Direct balance updates are intentionally not exposed through the UI to preserve data integrity.
+ * <p>Along with Transaction and AccountSummary, Account is one of the three models used by the application. It is
+ * only used to represent SQL Database information, assisting in passing that information back and forth but never
+ * being the key source for that data.</p>
+ *
+ * <p>NOTE: Balance is set on account creation via an initial balance and is subsequently only modified by transactions.
+ * Therefore, the Account model allow for balances being set again by the user.</p>
  */
 public class Account {
     private int account_id;

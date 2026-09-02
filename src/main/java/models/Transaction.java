@@ -2,13 +2,25 @@ package models;
 
 import java.time.LocalDate;
 
-// TODO: Review documentation for this class
-
 /**
- * Represents a single transaction associated with an account. Used by Main and DatabaseManager to communicate
- * transaction data between the client and the database. Category is only applicable to "purchase" transactions
- * and will be null for all other types.
+ * <p>Class representing a single transaction associated with an account. Used by Controllers and DatabaseManager in
+ * order to communicate data between the client and the database. DatabaseManager converts SQL data stored in the
+ * transactions table to Transaction objects and receives new Transaction objects to update the SQL database.</p>
+ *
+ * <p>Along with Account and AccountSummary, Transaction is one of the three models used by the application. It is
+ * only used to represent SQL Database information, assisting in passing that information back and forth but never
+ * being the key source for that data.</p>
+ *
+ * <p>Note: Transactions can only be created or deleted, and therefore have no setters. The constructor will
+ * assign all fields initially, but those fields cannot be altered by the program aftter creation</p>
+ *
+ * <p>Category Field: Not all Transactions have the transaction type of purchase, but all purchases are
+ * Transactions. Purchases also have categories, since the term "purchase" is very vague in relation to what a user
+ * purchases. Ideally, purchases could be a child class of Transaction, but for the current implementation, it
+ * was sufficient to group them in as just a type of Transaction. If a Transaction is not a purchase, the category field
+ * will be null.<p/>
  */
+
 public class Transaction {
     private int transactionID;
     private int accountID;
@@ -31,6 +43,7 @@ public class Transaction {
     public static final String TYPE_REFUND = "Refund";
     public static final String TYPE_INTEREST = "Interest";
 
+    // Arrays of income and expense types, necessary for checking transactions
     public static final String[] expenseTypes = {TYPE_PURCHASE, TYPE_TRANSFER, TYPE_WITHDRAWAL, TYPE_BILL, TYPE_FEE};
     public static final String[] incomeTypes = {TYPE_WAGES, TYPE_SALE, TYPE_GIFT, TYPE_REFUND, TYPE_INTEREST};
 
@@ -73,7 +86,7 @@ public class Transaction {
     /**
      * Returns true if the given transaction type subtracts from the account balance.
      * @param type Transaction type string
-     * @return true if expense, false if income
+     * @return true if Transaction is an expense, false if it is income
      */
     public static boolean isExpense(String type) {
         for (String expenseType : expenseTypes) {
@@ -94,11 +107,9 @@ public class Transaction {
     }
 
     /**
-     * Displays the transaction in a readable format. Category is only shown for purchase transactions.
+     * <p>Displays the transaction in a readable format. Category is only shown for purchase transactions.</p>
      *
-     * Example outputs:
-     *   TID#4 | $25.00 | purchase - Food | 2026-05-11
-     *   TID#5 | $500.00 | wages | 2026-05-15
+     * <p>Example: "TID#4 | $25.00 | Purchase - Food | 2026-05-11" </p>
      */
     @Override
     public String toString() {
@@ -109,10 +120,46 @@ public class Transaction {
                 + " | " + typeDisplay + " | " + date;
     }
 
+    // Getters for each field
+
+    /**
+     * Returns the transaction ID.
+     * @return Transaction ID within the database (int)
+     */
     public int getTransactionID() { return transactionID; }
+
+    /**
+     * Returns the account ID that the transaction is associated with.
+     * @return Account ID within the database (int)
+     */
     public int getAccountID() { return accountID; }
+
+    /**
+     * Returns the transaction amount as a positive value. Whether this amount is added to or subtracted from the
+     * account balance is determined by the transaction type (see isExpense()).
+     * @return Transaction amount (double)
+     */
     public double getAmount() { return amount; }
+
+    /**
+     * Returns the transaction type as a String, such as "Purchase", "Wages", etc. (see static type fields)
+     * @return Transaction type (String)
+     */
     public String getType() { return type; }
+
+    /**
+     * Returns the transaction's category as a String. If the transaction is a purchase, it will have a category.
+     * Otherwise, this method will return null.
+     * @return Transaction category (String) — null if the transaction is not a purchase
+     */
     public String getCategory() { return category; }
+
+    /**
+     * <p>Returns the date the transaction was made as a LocalDate.</p>
+     *
+     * <p>Similar to the custom models like this Transaction class, the LocalDate class is used to model dates in the
+     * database, allowing date operations to be performed easily while still being stored in the database as a string.</p>
+     * @return LocalDate of the date the transaction was made.
+     */
     public LocalDate getDate() { return date; }
 }
