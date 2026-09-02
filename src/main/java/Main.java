@@ -15,9 +15,6 @@ import java.io.InputStream;
  * class, then allowing the Controller classes to handle execution on a scene-by-scene basis after.
  */
 
-// TODO: Upon implementation of the SceneManager class alongside any other necessary classes, revise the start()
-//  method to use all necessary helper methods.
-
 public class Main extends Application {
 
     /**

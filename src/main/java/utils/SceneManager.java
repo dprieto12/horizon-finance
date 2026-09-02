@@ -28,16 +28,16 @@ public class SceneManager {
     private static final double DEFAULT_HEIGHT = 700;
 
     /**
-     * Smallest size the window can be resized to, in pixels, including the window frame.
+     * <p>Smallest size the window can be resized to, in pixels, including the window frame.</p>
      *
-     * Now that every scene lays itself out with containers rather than fixed coordinates, the point at which
-     * content actually stops fitting is set by the content itself. Measured across the six scenes, the largest
-     * layout minimums are 505px wide (the list plus fixed-width form in transactionOptions) and 629px tall
-     * (the two stacked panels in accountSettings, the one scene whose body does not scroll).
+     *<p>Now that every scene lays itself out with containers rather than fixed coordinates, the point at which content
+     *  actually stops fitting is set by the content itself. Measured across the six scenes, the largest layout minimums
+     *  are 505px wide (the list plus fixed-width form in transactionOptions) and 629px tall (the two stacked panels in
+     *  accountSettings, the one scene whose body does not scroll).</p>
      *
-     * These values clear both once the window frame is accounted for, which costs roughly 16px of width and
-     * 39px of height on Windows. Width has headroom beyond the minimum so the four summary tiles in
-     * analyticsDashboard still read comfortably rather than merely avoiding a clip.
+     * <p>These values clear both once the window frame is accounted for, which costs roughly 16px of width and 39px of
+     * height on Windows. Width has headroom beyond the minimum so the four summary tiles in analyticsDashboard still
+     * read comfortably rather than merely avoiding a clip.</p>
      */
     private static final double MIN_WIDTH = 720;
     private static final double MIN_HEIGHT = 680;
@@ -67,7 +67,12 @@ public class SceneManager {
     }
 
     /**
-     * Switches the current scene to the one specified by the passed FXML path.
+     * <p>Switches the current scene to the one specified by the passed FXML path and loads CSS styling for the scene.</p>
+     *
+     * <p>Note: When using this method within other classes, be sure to pass the full path to the FXML file, not just
+     * the filename.</p>
+     *
+     * <p>For Example: FXMLPath = "/fxml/dashboard.fxml" instead of "dashboard.fxml"</p>
      * @param FXMLPath Filepath to the FXML file to load
      * @throws IOException Occurs if the FXML file cannot be loaded
      */
@@ -90,29 +95,43 @@ public class SceneManager {
     }
 
     /**
-     * Sets the title of the window to the passed newTitle parameter to correspond to the current page.
+     * <p>Sets the title of the window to the passed newTitle parameter to correspond to the current page.</p>
+     * <p>Includes the application name "Horizon Finance" in the title, so the full title is "newPage - Horizon Finance".</p>
      * @param newPage Title of the new page / scene.
      */
     public static void setTitle(String newPage) {
         stage.setTitle(newPage + " - Horizon Finance");
     }
 
+
+
+    // Windows Title Bar Dark Mode Methods
+
+    /*
+    In order to set the title bar as black for Windows users, the native Windows API is used, which the below methods
+    relate to or implement.
+     */
+
     /**
      * Checks if the application is running on Windows.
+     * @return true if the application is running on Windows, false otherwise
      */
     private static boolean isWindows() {
         return System.getProperty("os.name").toLowerCase().contains("win");
     }
 
     /**
-     * Sets the Windows title bar to dark mode using native Windows APIs.
-     * Public method so it can be called on Alert dialogs as well.
+     * <p>Sets the Windows title bar to dark mode using native Windows APIs.</p>
+     *
+     * <p>Note: This is a public method, so it can be called on Alert dialogs as well.</p>
      */
     public static void setDarkTitleBar(javafx.stage.Window window) {
+        // Do not set dark title bar on non-Windows
         if (!isWindows()) {
             return;
         }
-        
+
+        // If on Windows...
         try {
             System.out.println("Attempting to set dark title bar...");
             // Get the native window handle
