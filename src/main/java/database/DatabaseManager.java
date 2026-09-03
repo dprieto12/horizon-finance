@@ -4,15 +4,21 @@ import models.Account;
 import models.AccountSummary;
 import models.Transaction;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
+
 import java.time.LocalDate;
+
 import java.util.ArrayList;
 import java.util.Map;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
-// TODO: Review documentation
 
 /**
  * Manages all interactions with the horizon_database SQLite database. Responsible for building the database
@@ -55,10 +61,13 @@ public class DatabaseManager {
      */
     private void buildDatabase() {
         createAccountsTable();
-        addAccountColorColumn();
         createTransactionsTable();
     }
 
+    /**
+     * Creates the accounts table if it does not already exist. IF NOT EXISTS guards ensure no data is lost
+     * on subsequent runs. The initial connection attempt is made implicitly by createAccountsTable().
+     */
     private void createAccountsTable() {
         String query = """
                 CREATE TABLE IF NOT EXISTS accounts(
@@ -79,37 +88,9 @@ public class DatabaseManager {
     }
 
     /**
-     * Adds the color column to databases created before accounts had colors. CREATE TABLE IF NOT EXISTS does
-     * nothing to a table that already exists, so an existing database would otherwise keep the old five-column
-     * shape and every account query would fail on the missing column.
-     *
-     * Checked against PRAGMA table_info rather than attempting the ALTER and swallowing the error, so an
-     * unrelated failure is still reported. The NOT NULL DEFAULT gives existing rows the default color.
+     * Creates the transactions table if it does not already exist. IF NOT EXISTS guards ensure no data is lost on
+     * subsequent runs.
      */
-    private void addAccountColorColumn() {
-        try (Connection conn = DriverManager.getConnection(databaseUrl);
-             Statement stmt = conn.createStatement()) {
-
-            boolean columnExists = false;
-            try (ResultSet rs = stmt.executeQuery("PRAGMA table_info(accounts)")) {
-                while (rs.next()) {
-                    if ("color".equalsIgnoreCase(rs.getString("name"))) {
-                        columnExists = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!columnExists) {
-                stmt.execute("ALTER TABLE accounts ADD COLUMN color INTEGER NOT NULL DEFAULT "
-                        + Account.DEFAULT_COLOR);
-                System.out.println("Added color column to existing accounts table.");
-            }
-        } catch (SQLException e) {
-            System.err.println("Failed to add account color column: " + e.getMessage());
-        }
-    }
-
     private void createTransactionsTable() {
         // category is nullable — only populated for "purchase" type transactions
         String query = """
@@ -134,16 +115,6 @@ public class DatabaseManager {
     // -------------------------------------------------------------------------
 
     /**
-     * Inserts a new account row into the accounts table.
-     * NOTE: Does not accept an Account object — a valid account_id does not exist until the database generates
-     * one via AUTOINCREMENT, so constructing an Account beforehand would produce an object with a meaningless
-     * placeholder ID.
-     */
-    public void createNewAccount(String accountName, String firstName, String lastName, double balance) {
-        createNewAccount(accountName, firstName, lastName, balance, Account.DEFAULT_COLOR);
-    }
-
-    /**
      * Inserts a new account row, including the color chosen for its tile.
      * @param color Palette index from 1 to Account.COLOR_COUNT
      */
@@ -166,10 +137,11 @@ public class DatabaseManager {
     }
 
     /**
-     * Updates an existing account row using data held in the provided Account object.
-     * NOTE: Balance is included so transaction-driven changes are correctly persisted when this is called
-     * after a refresh. Direct balance manipulation is intentionally not exposed through the UI.
-     * NOTE: Space before WHERE is required — its absence causes a silent SQL syntax failure.
+     * <p>Updates an existing account row using data held in the provided Account object.</p>
+     *
+     * <p>Note: Balance is included so transaction-driven changes are correctly persisted when this is called after a
+     * refresh. Direct balance manipulation is intentionally not exposed through the UI.</p>
+     *
      * @param account Modified Account object to persist
      */
     public void updateAccount(Account account) {
@@ -191,8 +163,8 @@ public class DatabaseManager {
     }
 
     /**
-     * Deletes an account and all of its associated transactions from the database.
-     * Transactions are deleted first to avoid orphaned rows.
+     * Deletes an account and all of its associated transactions from the database. ransactions are deleted first to
+     * avoid orphaned rows.
      * @param account Account to delete
      */
     public void deleteAccount(Account account) {
@@ -212,10 +184,13 @@ public class DatabaseManager {
     }
 
     /**
-     * Returns all accounts in the database as Account objects, ordered by account_id.
-     * ORDER BY account_id ensures the numbered display in Main is always consistent —
-     * without it, SQLite does not guarantee any particular row order.
-     * Returns an empty list (never null) if no accounts exist or on failure.
+     * <p>Returns all accounts in the database as Account objects, ordered by account_id.</p>
+     *
+     * <p>ORDER BY account_id ensures the numbered display in Main is always consistent — without it, SQLite does not
+     * guarantee any particular row order.</p>
+     *
+     * <p>Returns an empty list (never null) if no accounts exist or on failure.</p>
+     *
      * @return ArrayList of Account objects
      */
     public ArrayList<Account> getAccountList() {
@@ -235,9 +210,9 @@ public class DatabaseManager {
     }
 
     /**
-     * Returns a single account by its ID, or null if not found.
-     * Used by Main to refresh the current account after transactions modify the balance,
-     * avoiding the overhead of fetching all accounts just to update one.
+     * Returns a single account by its ID, or null if not found. Used by Main to refresh the current account after
+     * transactions modify the balance, avoiding the overhead of fetching all accounts just to update one.
+     *
      * @param accountID The account_id to look up
      * @return Account object, or null if not found
      */
@@ -262,15 +237,15 @@ public class DatabaseManager {
     // -------------------------------------------------------------------------
 
     /**
-     * Inserts a new transaction and updates the associated account balance, wrapped in a single SQL
-     * transaction for atomicity. If the balance update fails after the INSERT (or vice versa), both
-     * operations are rolled back together, preventing the database from reaching an inconsistent state.
+     * <p>Inserts a new transaction and updates the associated account balance, wrapped in a single SQL transaction for
+     * atomicity. If the balance update fails after the INSERT (or vice versa), both operations are rolled back
+     * together, preventing the database from reaching an inconsistent state.</p>
      *
-     * How this works: setAutoCommit(false) means neither statement is committed until conn.commit()
-     * is explicitly called. If a SQLException is thrown before commit(), the try-with-resources block
-     * closes the connection, which rolls back all uncommitted changes automatically.
+     * <p>How this works: setAutoCommit(false) means neither statement is committed until conn.commit() is explicitly
+     * called. If a SQLException is thrown before commit(), the try-with-resources block closes the connection, which
+     * rolls back all uncommitted changes automatically.</p>
      *
-     * Category must be non-null only for "purchase" type — pass null for all other types.
+     * <p>Category must be non-null only for "purchase" type — pass null for all other types.</p>
      *
      * @param accountID Account to associate the transaction with
      * @param amount    Positive transaction amount (validated by caller)
@@ -286,6 +261,7 @@ public class DatabaseManager {
              PreparedStatement addTxn    = conn.prepareStatement(insertTxn);
              PreparedStatement updateAcc = conn.prepareStatement(updateBalance)) {
 
+            // Disable auto-commit to ensure both operations succeed or fail together
             conn.setAutoCommit(false);
 
             addTxn.setInt(1, accountID);
@@ -303,6 +279,7 @@ public class DatabaseManager {
             addTxn.executeUpdate();
 
             // Expenses subtract from balance, income adds
+            // Convert amount to signed value: negative for expenses, positive for income
             double signedAmount = Transaction.isExpense(type) ? -amount : amount;
             updateAcc.setDouble(1, signedAmount);
             updateAcc.setInt(2, accountID);
@@ -330,12 +307,14 @@ public class DatabaseManager {
              PreparedStatement del     = conn.prepareStatement(deleteTxn);
              PreparedStatement reverse = conn.prepareStatement(reverseBalance)) {
 
+            // Disable auto-commit to ensure both operations succeed or fail together
             conn.setAutoCommit(false);
 
             del.setInt(1, transaction.getTransactionID());
             del.executeUpdate();
 
             // Reverse the original balance effect
+            // If it was an expense (subtracted), add it back. If it was income (added), subtract it.
             double reversal = Transaction.isExpense(transaction.getType())
                     ? transaction.getAmount()   // was subtracted — add back
                     : -transaction.getAmount(); // was added — subtract back
@@ -364,8 +343,6 @@ public class DatabaseManager {
         String query = "SELECT * FROM transactions WHERE account_id = ? ORDER BY date, transaction_id";
         return queryTransactions(query, accountID);
     }
-
-    // TODO: Rework methods to use two dates instead of one
 
 
     /**
@@ -442,6 +419,8 @@ public class DatabaseManager {
      */
     public Map<String, Map<String, Double>> getMonthlyIncomeExpenseByDateRange(int accountID, LocalDate sinceDate, LocalDate toDate) {
         String query;
+        // Build query based on whether we have a start date
+        // strftime('%Y-%m', date) extracts YYYY-MM format from the date string for grouping by month
         if (sinceDate == null) {
             query = "SELECT strftime('%Y-%m', date) as month, type, SUM(amount) as total " +
                     "FROM transactions WHERE account_id = ? AND date <= ? " +
@@ -452,6 +431,7 @@ public class DatabaseManager {
                     "GROUP BY month, type";
         }
 
+        // Create nested map structure: {"Income": {"2024-01": 1000.0}, "Expense": {"2024-01": 500.0}}
         Map<String, Map<String, Double>> result = new java.util.HashMap<>();
         result.put("Income", new java.util.HashMap<>());
         result.put("Expense", new java.util.HashMap<>());
@@ -459,6 +439,7 @@ public class DatabaseManager {
         try (Connection conn = DriverManager.getConnection(databaseUrl);
              PreparedStatement pstmt = conn.prepareStatement(query)) {
             pstmt.setInt(1, accountID);
+            // Set date parameters based on query structure (2 params if no sinceDate, 3 params otherwise)
             if (sinceDate == null) {
                 pstmt.setString(2, toDate.toString());
             } else {
@@ -472,6 +453,8 @@ public class DatabaseManager {
                 String type = rs.getString("type");
                 double amount = rs.getDouble("total");
 
+                // Classify transaction as income or expense, then add amount to the appropriate month
+                // merge() adds the amount to existing value or creates new entry if month doesn't exist
                 if (Transaction.isExpense(type)) {
                     result.get("Expense").merge(month, amount, Double::sum);
                 } else {
@@ -485,25 +468,22 @@ public class DatabaseManager {
     }
 
     /**
-     * Returns all purchase transactions for a given account matching a specific category.
-     * Only meaningful for "purchase" type transactions — all other types have a null category.
-     * @param accountID Account to retrieve transactions for
-     * @param category  Purchase category to filter by (e.g. "Food", "Entertainment")
-     * @return ObservableList of Transaction objects
+     * Returns an AccountSummary object of the currently selected account, which is used for the analytics summary. This
+     * includes income, expenses, net income, and net income per month across the date of time selected.
+     * @param accountID The accountID of the account to get a summary from (int)
+     * @param sinceDate The first date to start tracking data from (LocalDate)
+     * @param toDate The most recent date to track data up until (LocalDate)
+     * @return AccountSummary object containing income, expenses, net income, and net income per month as doubles.
      */
-    public ObservableList<Transaction> getTransactionsByCategory(int accountID, String category) {
-        String query = "SELECT * FROM transactions WHERE account_id = ? AND category = ? " +
-                "ORDER BY date, transaction_id";
-        return queryTransactions(query, accountID, category);
-    }
-
-    public AccountSummary getSummary(int accountID, LocalDate sinceDate, LocalDate toDate) throws SQLException {
+    public AccountSummary getSummary(int accountID, LocalDate sinceDate, LocalDate toDate) {
+        // CASE WHEN sums amounts by type: income types are summed separately from expense types
         String summaryQuery = "SELECT " +
                 "SUM(CASE WHEN type IN('Wages', 'Sale', 'Gift', 'Refund', 'Interest') THEN amount ELSE 0 END) as income, " +
                 "SUM(CASE WHEN type NOT IN('Wages', 'Sale', 'Gift', 'Refund', 'Interest') THEN amount ELSE 0 END) as expenses " +
                 "FROM transactions " +
                 "WHERE account_id = ? AND date >= ? AND date <= ?";
 
+        // Count distinct months (YYYY-MM) to calculate average per month
         String monthQuery = "SELECT COUNT(DISTINCT strftime('%Y-%m', date)) as active_months " +
                 "FROM transactions " +
                 "WHERE account_id = ? AND date >= ? AND date <= ?";
@@ -516,6 +496,7 @@ public class DatabaseManager {
 
             ResultSet summaryRs = summaryStmt.executeQuery();
 
+            // Execute second query to get month count
             PreparedStatement monthPstmt = conn.prepareStatement(monthQuery);
             monthPstmt.setInt(1, accountID);
             monthPstmt.setString(2, sinceDate.toString());
@@ -523,6 +504,7 @@ public class DatabaseManager {
 
             ResultSet monthRs = monthPstmt.executeQuery();
 
+            // Extract results and calculate derived metrics
             double income = summaryRs.getDouble("income");
             double expenses = summaryRs.getDouble("expenses");
             double net = income - expenses;
@@ -554,9 +536,11 @@ public class DatabaseManager {
     }
 
     /**
-     * Returns balance history for an account as a map of dates to balance values.
-     * This handles the case where transactions can be added with past dates by calculating
-     * the running balance chronologically from the initial balance.
+     * <p>Returns balance history for an account as a map of dates to balance values.</p>
+     *
+     * <p>This handles the case where transactions can be added with past dates by calculating the running balance
+     * chronologically from the initial balance.</p>
+     *
      * @param accountID Account to retrieve balance history for
      * @return Map where key is date and value is balance on that date
      */
@@ -568,24 +552,28 @@ public class DatabaseManager {
         }
         double currentBalance = account.getBalance();
 
-        // Get all transactions sorted by date
+        // Get all transactions sorted by date (and transaction_id for tiebreaker)
         String query = "SELECT * FROM transactions WHERE account_id = ? ORDER BY date, transaction_id";
         ObservableList<Transaction> allTransactions = queryTransactions(query, accountID);
 
-        // Calculate the net effect of all transactions
+        // Calculate the net effect of all transactions to determine initial balance
+        // Since transactions can have past dates, we work backwards from current balance
         double netTransactionEffect = 0.0;
         for (Transaction t : allTransactions) {
             double signedAmount = Transaction.isExpense(t.getType()) ? -t.getAmount() : t.getAmount();
             netTransactionEffect += signedAmount;
         }
 
-        // Initial balance is current balance minus all transaction effects
+        // Initial balance = current balance - total effect of all transactions
+        // This gives us the balance before any transactions occurred
         double runningBalance = currentBalance - netTransactionEffect;
 
         // Build balance history by walking through transactions chronologically
+        // TreeMap automatically sorts by date, ensuring chronological order
         Map<LocalDate, Double> balanceHistory = new java.util.TreeMap<>();
-        balanceHistory.put(LocalDate.MIN, runningBalance); // Starting balance
+        balanceHistory.put(LocalDate.MIN, runningBalance); // Starting balance (before any transactions)
 
+        // Apply each transaction in order to build the timeline
         for (Transaction t : allTransactions) {
             double signedAmount = Transaction.isExpense(t.getType()) ? -t.getAmount() : t.getAmount();
             runningBalance += signedAmount;
@@ -596,14 +584,14 @@ public class DatabaseManager {
     }
 
     /**
-     * Private helper that executes a parameterized transaction SELECT and maps each row to a Transaction object.
+     * <p>Private helper that executes a parameterized transaction SELECT and maps each row to a Transaction object.</p>
      *
-     * accountID always fills position 1. Any additional string parameters are set sequentially from position 2
-     * onward — callers must ensure the number of stringParams matches the remaining ? placeholders exactly.
+     * <p>accountID always fills position 1. Any additional string parameters are set sequentially from position 2
+     * onward — callers must ensure the number of stringParams matches the remaining ? placeholders exactly.<p/>
      *
-     * Using varargs (String...) means callers pass only the params they need, and each is assigned the correct
+     * <p>Using varargs (String...) means callers pass only the params they need, and each is assigned the correct
      * positional index automatically — avoiding the previous bug where named params (param2, param3...) were
-     * passed at the wrong index and silently returned empty results.
+     * passed at the wrong index and silently returned empty results.<p/>
      */
     private ObservableList<Transaction> queryTransactions(String query, int accountID, String... stringParams) {
         ObservableList<Transaction> transactions = FXCollections.observableArrayList();
@@ -626,8 +614,8 @@ public class DatabaseManager {
     }
 
     /**
-     * Private helper that executes a parameterized transaction SELECT with an integer LIMIT parameter.
-     * Similar to queryTransactions but supports integer parameters for LIMIT clauses.
+     * Private helper that executes a parameterized transaction SELECT with an integer LIMIT parameter. Similar to
+     * queryTransactions, but supports integer parameters for LIMIT clauses.
      */
     private ObservableList<Transaction> queryTransactionsWithLimit(String query, int accountID, String... stringParams) {
         ObservableList<Transaction> transactions = FXCollections.observableArrayList();
@@ -635,8 +623,10 @@ public class DatabaseManager {
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setInt(1, accountID);
+            // Set remaining parameters: last parameter is treated as integer (for LIMIT), others as strings
             for (int i = 0; i < stringParams.length; i++) {
                 String param = stringParams[i];
+                // If this is the last parameter and it's all digits, parse as integer for LIMIT clause
                 if (i == stringParams.length - 1 && param.matches("\\d+")) {
                     pstmt.setInt(i + 2, Integer.parseInt(param));
                 } else {
@@ -659,8 +649,8 @@ public class DatabaseManager {
     // -------------------------------------------------------------------------
 
     /**
-     * Maps the current row of a ResultSet to an Account object.
-     * Extracted to avoid duplicating column-name strings across getAccountList() and getAccount().
+     * Maps the current row of a ResultSet to an Account object. Extracted to avoid duplicating column-name strings
+     * across getAccountList() and getAccount().
      */
     private Account mapAccount(ResultSet rs) throws SQLException {
         return new Account(
@@ -674,8 +664,10 @@ public class DatabaseManager {
     }
 
     /**
-     * Maps the current row of a ResultSet to a Transaction object.
-     * category may be null for non-purchase transactions — getString returns null for SQL NULL, which is correct.
+     * <p>Maps the current row of a ResultSet to a Transaction object.</p>
+     *
+     * <p>Note: category may be null for non-purchase transactions — getString returns null for SQL NULL,
+     * which is correct.</p>
      */
     private Transaction mapTransaction(ResultSet rs) throws SQLException {
         return new Transaction(
