@@ -18,10 +18,9 @@ import java.io.IOException;
  * after creation.
  */
 
-// TODO: Stylize
-// TODO: Document
-
 public class CreateAccountController {
+    // TextFields in the scene (must be tagged in order to set limiters)
+
     @FXML
     private TextField firstNameTextField;
 
@@ -37,14 +36,19 @@ public class CreateAccountController {
     @FXML
     private TextField centTextField;
 
+    // Holds all TextFields so they can be easily iterated over
+    private TextField[] textFields;
+
+    // All other dynamic components in the scene
     @FXML
     private Label errorMessageLabel;
 
     @FXML
     private ToggleGroup colorToggleGroup;
 
-    private TextField[] textFields;
-
+    /**
+     * Initializes the controller by setting the title and setting up text field limiters.
+     */
     @FXML
     public void initialize() {
         SceneManager.setTitle("Create Account");
@@ -60,25 +64,35 @@ public class CreateAccountController {
         centTextField.setTextFormatter(TextFieldUtils.createNumberLimitFormatter(2));
     }
 
-    public void createNewAccount(ActionEvent event) throws IOException {
+    /**
+     * Creates a new account with the provided information in the TextFields and redirects the user to the dashboard.
+     * If the TextFields are not filled, the error message is displayed.
+     * @throws IOException If the scene switch fails when calling SceneManager.switchScene(String FXMLPath)
+     */
+    public void createNewAccount() throws IOException {
         if (TextFieldUtils.fieldsAreFilled(textFields)) {
+            // Get text from text fields and parse balance
             String firstName = firstNameTextField.getText().trim();
             String lastName = lastNameTextField.getText().trim();
             String accountName = accountNameTextField.getText().trim();
             int dollar = Integer.parseInt(dollarTextField.getText().trim());
             int cent = Integer.parseInt(centTextField.getText().trim());
             double balance = dollar + (cent / 100.0);
+
+            // Create a new account and save it to the database
             DatabaseManager.getInstance().createNewAccount(accountName, firstName, lastName, balance,
                     getSelectedColor());
-            SceneManager.switchScene("/fxml/chooseAccount.fxml");
+
+            // Switch back to the account selection screen
+            goBack();
         } else {
             errorMessageLabel.setVisible(true);
         }
     }
 
     /**
-     * Reads the palette index from the selected color swatch, which each swatch carries as its userData.
-     * Falls back to the default color if nothing is selected, so an account is never created without one.
+     * Reads the palette index from the selected color swatch, which each swatch carries as its userData. Falls back to
+     * the default color if nothing is selected, so an account is never created without one.
      * @return Palette index from 1 to Account.COLOR_COUNT
      */
     private int getSelectedColor() {
@@ -95,6 +109,11 @@ public class CreateAccountController {
         }
     }
 
+    /**
+     * Takes the user back to the account selection screen, bound to the back button and called when creating a new
+     * account.
+     * @throws IOException If the scene switch fails when calling SceneManager.switchScene(String FXMLPath)
+     */
     public void goBack() throws IOException {
         SceneManager.switchScene("/fxml/chooseAccount.fxml");
     }

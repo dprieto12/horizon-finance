@@ -12,8 +12,6 @@ import utils.SceneManager;
 import java.io.IOException;
 import java.util.ArrayList;
 
-// TODO: Stylize & set a limit for how many accounts can be made
-
 /**
  * Controller for the ChooseAccount.fxml scene. Displays a list of account buttons and a button to create a new
  * account, prompting the user to select one in order to navigate to the dashboard.
@@ -27,12 +25,12 @@ public class ChooseAccountController {
      * Initializes the controller and sets up the scene, loading accounts from the database and adding them to the
      * accountContainer VBox.
      */
-
     @FXML
     public void initialize() {
         SceneManager.setTitle("Choose Account");
 
         try {
+            // Load and display accounts from database
             ArrayList<Account> accounts = DatabaseManager.getInstance().getAccountList();
             for (Account a : accounts) {
                 accountContainer.getChildren().add(createAccountTile(a));
@@ -63,9 +61,13 @@ public class ChooseAccountController {
         return tile;
     }
 
-    private void chooseAccount(Account a) {
+    /**
+     * Switches to the dashboard scene and sets the current account to the one selected by the user.
+     * @param chosenAccount Account selected by the user (Account object)
+     */
+    private void chooseAccount(Account chosenAccount) {
         try {
-            ApplicationState.setCurrentAccount(a);
+            ApplicationState.setCurrentAccount(chosenAccount);
             SceneManager.switchScene("/fxml/dashboard.fxml");
         } catch (IOException e) {
             System.err.println("Error switching to dashboard scene: " + e.getMessage());
@@ -73,7 +75,10 @@ public class ChooseAccountController {
         }
     }
 
-    /** Bound to the create button in chooseAccount.fxml, which sits outside the scrolling account list. */
+    /**
+     * Bound to the create button in chooseAccount.fxml, which sits outside the scrolling account list. Switches to the
+     * create account scene.
+     * */
     @FXML
     private void createAccount() {
         try {
