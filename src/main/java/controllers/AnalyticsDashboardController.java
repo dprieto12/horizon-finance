@@ -6,10 +6,8 @@ import javafx.beans.binding.NumberBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.chart.AreaChart;
-import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.Chart;
-import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.StackedBarChart;
@@ -36,9 +34,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-// TODO: Document
-// TODO: Stylize
-
 
 public class AnalyticsDashboardController {
 
@@ -58,6 +53,8 @@ public class AnalyticsDashboardController {
      */
     private static final double PURCHASE_CHART_WIDTH_SHARE = 0.6;
 
+
+    // Containers
     @FXML
     private ScrollPane analyticsScrollPane;
 
@@ -65,16 +62,27 @@ public class AnalyticsDashboardController {
     private VBox mainVBox;
 
     @FXML
+    private VBox barChartBox;
+
+    @FXML
+    private HBox pieChartRow;
+
+    @FXML
+    private VBox purchaseChartBox;
+
+    @FXML
+    private VBox balanceChartBox;
+
+    @FXML
+    private VBox topTransactionsList;
+
+
+    // Labels
+    @FXML
     private Label accountInfoLabel;
 
     @FXML
     private Label summaryLabel;
-
-    @FXML
-    private DatePicker fromDatePicker;
-
-    @FXML
-    private DatePicker toDatePicker;
 
     @FXML
     private Label invalidDateLabel;
@@ -94,30 +102,34 @@ public class AnalyticsDashboardController {
     @FXML
     private Label avgValueLabel;
 
-    @FXML
-    private VBox barChartBox;
 
+    // DatePickers
     @FXML
-    private HBox pieChartRow;
-
-    @FXML
-    private VBox purchaseChartBox;
+    private DatePicker fromDatePicker;
 
     @FXML
-    private VBox balanceChartBox;
+    private DatePicker toDatePicker;
 
-    @FXML
-    private VBox topTransactionsList;
 
-    private Account currentAccount = ApplicationState.getCurrentAccount();
-
+    // Charts
     private StackedBarChart<Number, String> barChart;
 
     private AreaChart<String, Number> balanceLineChart;
 
+
+    // Current Account Instance
+    private Account currentAccount;
+
+
+    /**
+     * Initializes the controller by setting the title, updating the account info label, binding responsive spacing,
+     * restricting date pickers to today, and loading all time data.
+     */
     @FXML
     public void initialize() {
         SceneManager.setTitle("Analytics");
+
+        currentAccount = ApplicationState.getCurrentAccount();
 
         updateAccountInfoLabel();
         bindResponsiveSpacing();
@@ -197,19 +209,30 @@ public class AnalyticsDashboardController {
         label.getStyleClass().add(amount < 0 ? "amount-expense" : "amount-income");
     }
 
+    /**
+     * Updates the account info label with the current account's name and the user's full name.
+     */
     private void updateAccountInfoLabel() {
         accountInfoLabel.setText(currentAccount.getAccountName() + " - " + currentAccount.getFirstName() + " " +
                 currentAccount.getLastName());
     }
 
+    /**
+     * Navigates the user back to the dashboard scene.
+     * @throws IOException If the scene switch fails when calling SceneManager.switchScene(String FXMLPath)
+     */
     public void backToDashboard() throws IOException {
         SceneManager.switchScene("/fxml/dashboard.fxml");
     }
 
-    // TODO: Consolodate outer helper methods into a refresh() method to avoid code duplication
+
 
     // These methods correspond to buttons, changing data based on the time period
 
+    /**
+     * Updates the summary label and refreshes the page to show data for the current month.
+     * @throws SQLException If the database query fails
+     */
     public void getThisMonth() throws SQLException {
         summaryLabel.setText("Summary - This Month:");
         LocalDate thisMonth = LocalDate.now().withDayOfMonth(1);
@@ -218,6 +241,10 @@ public class AnalyticsDashboardController {
         refreshPage(thisMonth, today);
     }
 
+    /**
+     * Updates the summary label and refreshes the page to show data for the last 3 months.
+     * @throws SQLException If the database query fails
+     */
     public void getLast3Months() throws SQLException {
         summaryLabel.setText("Summary - Last 3 Months:");
         LocalDate threeMonthsAgo = LocalDate.now().withDayOfMonth(1).minusMonths(3);
@@ -226,6 +253,10 @@ public class AnalyticsDashboardController {
         refreshPage(threeMonthsAgo, today);
     }
 
+    /**
+     * Updates the summary label and refreshes the page to show data for the last 6 months.
+     * @throws SQLException If the database query fails
+     */
     public void getLast6Months() throws SQLException {
         summaryLabel.setText("Summary - Last 6 Months:");
         LocalDate sixMonthsAgo = LocalDate.now().withDayOfMonth(1).minusMonths(6);
@@ -234,6 +265,10 @@ public class AnalyticsDashboardController {
         refreshPage(sixMonthsAgo, today);
     }
 
+    /**
+     * Updates the summary label and refreshes the page to show data for the last year.
+     * @throws SQLException If the database query fails
+     */
     public void getThisYear() throws SQLException {
         summaryLabel.setText("Summary - This Year:");
         LocalDate thisYear = LocalDate.now().withDayOfYear(1);
@@ -242,12 +277,20 @@ public class AnalyticsDashboardController {
         refreshPage(thisYear, today);
     }
 
+    /**
+     * Updates the summary label and refreshes the page to show all transactional data.
+     * @throws SQLException If the database query fails
+     */
     public void getAllTime() throws SQLException {
         summaryLabel.setText("Summary - All Time:");
 
         refreshPage(LocalDate.MIN, LocalDate.now());
     }
 
+    /**
+     * Updates the summary label and refreshes the page to show data for the custom dates entered.
+     * @throws SQLException If the database query fails
+     */
     public void customDate() throws SQLException {
         LocalDate fromDate = fromDatePicker.getValue();
         LocalDate toDate = toDatePicker.getValue();
@@ -279,7 +322,12 @@ public class AnalyticsDashboardController {
         setSignedAmount(netValueLabel, currentAccountSummary.net);
         setSignedAmount(avgValueLabel, currentAccountSummary.avgNetPerMonth);
     }
-    
+
+    /**
+     * Plots the income and expense bar chart for the given date range.
+     * @param sinceDate Earliest date to grab data from (LocalDate)
+     * @param toDate Latest date to grab data from (LocalDate)
+     */
     private void plotIncomeExpenseBarChart(LocalDate sinceDate, LocalDate toDate) {
         removeExistingChart();
 
@@ -291,22 +339,30 @@ public class AnalyticsDashboardController {
 
         Set<String> allMonths = getAllMonths(incomeValues, expenseValues);
 
-        barChart = createChart();
+        barChart = createBarChart();
 
         XYChart.Series<Number, String> incomeSeries = createSeriesFromMap(incomeValues, allMonths, "Income");
         XYChart.Series<Number, String> expenseSeries = createSeriesFromMap(expenseValues, allMonths, "Expenses");
 
         barChart.getData().addAll(incomeSeries, expenseSeries);
-        styleBars();
 
         makeChartResponsive(barChart, WIDE_CHART_RATIO, WIDE_CHART_MIN_HEIGHT);
         barChartBox.getChildren().add(barChart);
     }
 
+    /**
+     * Removes any existing chart from the bar chart box.
+     */
     private void removeExistingChart() {
         barChartBox.getChildren().clear();
     }
 
+    /**
+     * Returns a set of all months present in the income and expense data.
+     * @param incomeValues Map of income values by month
+     * @param expenseValues Map of expense values by month
+     * @return Set of all months present in the income and expense data
+     */
     private Set<String> getAllMonths(Map<String, Double> incomeValues, Map<String, Double> expenseValues) {
         Set<String> allMonths = new TreeSet<>();
         allMonths.addAll(incomeValues.keySet());
@@ -314,12 +370,16 @@ public class AnalyticsDashboardController {
         return allMonths;
     }
 
-    private StackedBarChart<Number, String> createChart() {
+    /**
+     * Handles the creation of a new bar chart for the plotIncomeExpenseBarChart method.
+     * @return StackedBarChart<Number, String> corresponding to income vs. expenses over months
+     */
+    private StackedBarChart<Number, String> createBarChart() {
         CategoryAxis yAxis = new CategoryAxis();
         yAxis.setLabel("Month");
 
         NumberAxis xAxis = new NumberAxis();
-        xAxis.setLabel("Amount");
+        xAxis.setLabel("Total Amount ($)");
         xAxis.setTickUnit(100);
         xAxis.setMinorTickVisible(false);
 
@@ -331,6 +391,13 @@ public class AnalyticsDashboardController {
         return chart;
     }
 
+    /**
+     * Creates a new series for the bar chart based on the given values and all months.
+     * @param values Map containing the total values for each month
+     * @param allMonths Set of all months with transactional data
+     * @param seriesName Name of the series passed as a String
+     * @return XYChart.Series<Number, String> corresponding to the given values and all months
+     */
     private XYChart.Series<Number, String> createSeriesFromMap(Map<String, Double> values, Set<String> allMonths, String seriesName) {
         XYChart.Series<Number, String> series = new XYChart.Series<>();
         series.setName(seriesName);
@@ -345,28 +412,10 @@ public class AnalyticsDashboardController {
     }
 
     /**
-     * Bar colors are no longer set here. They come from styles.css, which targets the series classes JavaFX
-     * already applies (.default-color0 for the income series, .default-color1 for expenses). An inline style
-     * would outrank the stylesheet, and it only reached the bars themselves -- the legend swatches kept the
-     * theme's default colors and disagreed with them.
+     * Plots a line chart of the balance history for the given date range.
+     * @param sinceDate Start date of the range (LocalDate)
+     * @param toDate End date of the range (LocalDate)
      */
-    private void styleBars() {
-        for (XYChart.Series<Number, String> series : barChart.getData()) {
-            for (XYChart.Data<Number, String> data : series.getData()) {
-                javafx.scene.Node node = data.getNode();
-                if (node != null) {
-                    addTooltip(node, series.getName(), data.getXValue());
-                }
-            }
-        }
-    }
-
-    private void addTooltip(javafx.scene.Node node, String seriesName, Number value) {
-        javafx.scene.control.Tooltip tooltip = new javafx.scene.control.Tooltip(
-                seriesName + ": $" + String.format("%.2f", value));
-        javafx.scene.control.Tooltip.install(node, tooltip);
-    }
-
     private void plotBalanceLineChart(LocalDate sinceDate, LocalDate toDate) {
         removeExistingBalanceChart();
 
@@ -418,7 +467,12 @@ public class AnalyticsDashboardController {
     }
 
 
-    // TODO: If data is empty, show message
+    /**
+     * Creates maps of transaction types and purchase categories with their corresponding amounts for the given date
+     * range and plots pie charts for each.
+     * @param sinceDate Start date of the range (LocalDate)
+     * @param toDate End date of the range (LocalDate)
+     */
     private void plotPieCharts(LocalDate sinceDate, LocalDate toDate) {
         removeExistingPieCharts();
 
@@ -439,6 +493,10 @@ public class AnalyticsDashboardController {
         plotPurchasePieChart(purchaseCategoryAmountMap);
     }
 
+    /**
+     * Plots the pie chart representing the type distribution of income transactions.
+     * @param typeAmountMap Map of transaction types and their corresponding amounts
+     */
     private void plotIncomePieChart(Map<String, Double> typeAmountMap) {
         ObservableList<PieChart.Data> incomePieChartData = FXCollections.observableArrayList();
 
@@ -470,6 +528,10 @@ public class AnalyticsDashboardController {
         pieChartRow.getChildren().add(pieChart);
     }
 
+    /**
+     * Plots the pie chart representing the type distribution of expense transactions.
+     * @param typeAmountMap Map of transaction types and their corresponding amounts
+     */
     private void plotExpensePieChart(Map<String, Double> typeAmountMap) {
         ObservableList<PieChart.Data> expensePieChartData = FXCollections.observableArrayList();
 
@@ -491,6 +553,10 @@ public class AnalyticsDashboardController {
         }
     }
 
+    /**
+     * Plots the pie chart representing the category distribution of purchase transactions (which are expenses).
+     * @param purchaseCategoryAmountMap Map of purchase categories and their corresponding amounts
+     */
     private void plotPurchasePieChart(Map<String, Double> purchaseCategoryAmountMap) {
         ObservableList<PieChart.Data> purchasePieChartData = FXCollections.observableArrayList();
 
@@ -524,11 +590,19 @@ public class AnalyticsDashboardController {
         purchaseChartBox.getChildren().add(pieChart);
     }
 
+    /**
+     * Removes any existing pie charts from the UI.
+     */
     private void removeExistingPieCharts() {
         pieChartRow.getChildren().clear();
         purchaseChartBox.getChildren().clear();
     }
 
+    /**
+     * Pluralizes the given transaction type.
+     * @param type The transaction type to pluralize
+     * @return The pluralized transaction type
+     */
     private String pluralizeType(String type) {
         if (type == null) return type;
         switch (type) {
@@ -548,6 +622,8 @@ public class AnalyticsDashboardController {
     /**
      * Lists the largest transactions of the period as one row each, rather than as a single block of
      * newline-separated toString() output, so each amount can be colored by direction.
+     * @param sinceDate The start date of the period (LocalDate)
+     * @param toDate The end date of the period (LocalDate)
      */
     private void setTopTransactions(LocalDate sinceDate, LocalDate toDate) {
         topTransactionsList.getChildren().clear();
@@ -565,7 +641,10 @@ public class AnalyticsDashboardController {
         }
     }
 
-    /** Builds one transaction row: type and date on the left, the amount pushed to the right edge. */
+    /** Builds one transaction row: type and date on the left, the amount pushed to the right edge.
+     * @param transaction The transaction to create a row for
+     * @return The HBox containing the transaction row
+     */
     private HBox createTransactionRow(Transaction transaction) {
         Label typeLabel = new Label(describeType(transaction));
 
@@ -585,13 +664,23 @@ public class AnalyticsDashboardController {
         return row;
     }
 
-    /** Purchases carry a category worth showing; every other type is described by its type alone. */
+    /**
+     * Purchases carry a category worth showing; every other type is described by its type alone.
+     * @param transaction The transaction to describe
+     * @return The description of the transaction type
+     */
     private String describeType(Transaction transaction) {
         return Transaction.requiresCategory(transaction.getType()) && transaction.getCategory() != null
                 ? transaction.getType() + " - " + transaction.getCategory()
                 : transaction.getType();
     }
 
+    /**
+     * Refreshes the totals, charts, and top transactions based on the dates given.
+     * @param sinceDate The start date of the period (LocalDate)
+     * @param toDate The end date of the period (LocalDate)
+     * @throws SQLException If there is an error accessing the database when these methods call DatabaseManager methods
+     */
     private void refreshPage(LocalDate sinceDate, LocalDate toDate) throws SQLException {
         setTotals(sinceDate, toDate);
         plotIncomeExpenseBarChart(sinceDate, toDate);
