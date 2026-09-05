@@ -40,6 +40,17 @@ public class DatabaseManager {
     }
 
     /**
+     * Package-private constructor for testing only. Accepts an explicit database URL so tests can
+     * point the manager at an in-memory SQLite database without touching horizon_database.db.
+     * Should never be called from production code — use getInstance() instead.
+     * @param databaseUrl JDBC URL of the database to connect to (e.g. "jdbc:sqlite::memory:")
+     */
+    DatabaseManager(String databaseUrl) {
+        DatabaseManager.databaseUrl = databaseUrl;
+        buildDatabase();
+    }
+
+    /**
      * Returns the singleton DatabaseManager instance, which is a private static field held by the class. If the
      * instance does not exist, it is created.
      * @return DatabaseManager instance

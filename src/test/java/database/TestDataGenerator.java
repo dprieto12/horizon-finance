@@ -1,6 +1,5 @@
-package utils;
+package database;
 
-import database.DatabaseManager;
 import models.Transaction;
 
 import java.time.LocalDate;
