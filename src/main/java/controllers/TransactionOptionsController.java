@@ -41,38 +41,71 @@ public class TransactionOptionsController {
     private ComboBox<String> categoryComboBox;
 
     @FXML
+    private ComboBox<String> viewModeComboBox;
+
+    @FXML
     private DatePicker datePicker;
 
     @FXML
     private Label errorMessageLabel;
 
-    @FXML
-    private ComboBox<String> viewModeComboBox;
-
     private ObservableList<Transaction> transactionsList;
 
+    /**
+     * Initializes the controller by setting the title along with the various other components and controls in the scene.
+     */
     @FXML
     public void initialize() {
         SceneManager.setTitle("Transaction Options");
 
-        // Initialize view mode combo box
+        // Call helper methods to initialize components and controls (these methods were made for code organization and
+        // readability)
+        initializeComboBoxes();
+        setupDatePicker();
+        setupRadioButtonListeners();
+        setupTypeComboBoxListener();
+        setupViewModeListener();
+        loadTransactions();
+        setupTransactionListViewCellFactory();
+    }
+
+    /**
+     * Initializes the combo boxes with their respective options.
+     */
+    private void initializeComboBoxes() {
         viewModeComboBox.setItems(FXCollections.observableArrayList("Recently Added", "By Date"));
         viewModeComboBox.setValue("Recently Added");
-
-        // Initialize category combo box
         categoryComboBox.setItems(FXCollections.observableArrayList(Transaction.purchaseCategories));
-
-        // Restrict date picker to today or earlier
-        restrictDatePickerToToday();
-
-        // Set default date to today
-        datePicker.setValue(LocalDate.now());
-
-        // Initialize with expense types selected by default
-        // (Radio button listeners won't fire on initialization since buttons are already selected)
         typeComboBox.setItems(FXCollections.observableArrayList(Transaction.expenseTypes));
+    }
 
-        // Set up radio button listeners to filter type combo box
+    /**
+     * Initializes the DatePicker with today's date and restricts it to only allow selecting dates up to today.
+     */
+    private void setupDatePicker() {
+        restrictDatePickerToToday();
+        datePicker.setValue(LocalDate.now());
+    }
+
+    /**
+     * Restricts the DatePicker to only allow selecting dates up to today. Future dates will be grayed out and
+     * unselectable.
+     */
+    private void restrictDatePickerToToday() {
+        LocalDate today = LocalDate.now();
+        datePicker.setDayCellFactory(dp -> new javafx.scene.control.DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(empty || date.isAfter(today));
+            }
+        });
+    }
+
+    /**
+     * Sets up listeners for the expense and income radio buttons.
+     */
+    private void setupRadioButtonListeners() {
         expenseRadioButton.selectedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
                 typeComboBox.setItems(FXCollections.observableArrayList(Transaction.expenseTypes));
@@ -90,8 +123,12 @@ public class TransactionOptionsController {
                 categoryComboBox.setValue(null);
             }
         });
+    }
 
-        // Set up type combo box listener to enable/disable category
+    /**
+     * Sets up a listener for the type combo box.
+     */
+    private void setupTypeComboBoxListener() {
         typeComboBox.setOnAction(event -> {
             String selectedType = typeComboBox.getValue();
             if (Transaction.requiresCategory(selectedType)) {
@@ -101,14 +138,19 @@ public class TransactionOptionsController {
                 categoryComboBox.setValue(null);
             }
         });
+    }
 
-        // Set up view mode combo box listener to reload transactions
+    /**
+     * Sets up a listener for the view mode combo box.
+     */
+    private void setupViewModeListener() {
         viewModeComboBox.setOnAction(event -> loadTransactions());
+    }
 
-        // Load transactions
-        loadTransactions();
-
-        // Set custom cell factory to display running balance
+    /**
+     * Sets up the cell factory for the transaction list view.
+     */
+    private void setupTransactionListViewCellFactory() {
         transactionListView.setCellFactory(new Callback<ListView<Transaction>, ListCell<Transaction>>() {
             @Override
             public ListCell<Transaction> call(ListView<Transaction> param) {
@@ -119,7 +161,6 @@ public class TransactionOptionsController {
                         if (empty || transaction == null) {
                             setText(null);
                         } else {
-                            // Calculate running balance up to this transaction
                             double runningBalance = calculateRunningBalance(transaction);
                             String display = String.format("$%.2f | %s", transaction.getAmount(), transaction.getType());
                             if (Transaction.requiresCategory(transaction.getType()) && transaction.getCategory() != null) {
@@ -135,20 +176,8 @@ public class TransactionOptionsController {
     }
 
     /**
-     * Restricts the DatePicker to only allow selecting dates up to today.
-     * Future dates will be grayed out and unselectable.
+     * Loads the transactions based on the current account and view mode.
      */
-    private void restrictDatePickerToToday() {
-        LocalDate today = LocalDate.now();
-        datePicker.setDayCellFactory(dp -> new javafx.scene.control.DateCell() {
-            @Override
-            public void updateItem(LocalDate date, boolean empty) {
-                super.updateItem(date, empty);
-                setDisable(empty || date.isAfter(today));
-            }
-        });
-    }
-
     private void loadTransactions() {
         int currentAccountID = ApplicationState.getCurrentAccount().getAccountID();
         transactionsList = DatabaseManager.getInstance().getTransactions(currentAccountID);
@@ -163,6 +192,11 @@ public class TransactionOptionsController {
         transactionListView.setItems(transactionsList);
     }
 
+    /**
+     * Calculates the running balance after a given transaction.
+     * @param targetTransaction Transaction to stop calculating the balance at
+     * @return Running balance after the target transaction
+     */
     private double calculateRunningBalance(Transaction targetTransaction) {
         Account currentAccount = DatabaseManager.getInstance().getAccount(ApplicationState.getCurrentAccount().getAccountID());
         double balance = currentAccount.getBalance();
@@ -189,6 +223,9 @@ public class TransactionOptionsController {
         return runningBalance;
     }
 
+    /**
+     * Adds a new transaction to the database and refreshes the transactions displayed.
+     */
     @FXML
     public void addTransaction() {
         try {
@@ -245,6 +282,9 @@ public class TransactionOptionsController {
         }
     }
 
+    /**
+     * Deletes the selected transaction from the database and refreshes the transactions displayed.
+     */
     @FXML
     public void deleteTransaction() {
         Transaction selectedTransaction = transactionListView.getSelectionModel().getSelectedItem();
@@ -263,15 +303,26 @@ public class TransactionOptionsController {
         hideError();
     }
 
+    /**
+     * Sets the errorMessageLabel to the given message and makes it visible.
+     * @param message Error message to display
+     */
     private void showError(String message) {
         errorMessageLabel.setText(message);
         errorMessageLabel.setVisible(true);
     }
 
+    /**
+     * Hides the error message label.
+     */
     private void hideError() {
         errorMessageLabel.setVisible(false);
     }
 
+    /**
+     * Navigates the user back to the dashboard.
+     * @throws IOException If the scene switch fails when calling SceneManager.switchScene(String FXMLPath)
+     */
     public void goBack() throws IOException {
         SceneManager.switchScene("/fxml/dashboard.fxml");
     }

@@ -16,16 +16,15 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-// TODO: Document
-// TODO: Stylize
-
 public class AccountSettingsController {
+    // Dynamic labels
     @FXML
     private Label currentBalanceLabel;
 
     @FXML
     private Label fieldsMissingLabel;
 
+    // TextFields (must be made dynamic to set limiters)
     @FXML
     private TextField accountNameTextField;
 
@@ -35,8 +34,12 @@ public class AccountSettingsController {
     @FXML
     private TextField lastNameTextField;
 
+    // For fieldsAreFilled() method
     private TextField[] textFields;
 
+    /**
+     * Initializes the controller by setting the title, updating the balance label, and setting the text fields.
+     */
     @FXML
     public void initialize() {
         SceneManager.setTitle("Account Settings");
@@ -45,12 +48,19 @@ public class AccountSettingsController {
         setTextFields();
     }
 
+    /**
+     * Updates the balance label with the current account's balance.
+     */
     private void updateBalanceLabel() {
         String customBalance = "Account Balance: $" +
                 String.format("%.2f", ApplicationState.getCurrentAccount().getBalance());
         currentBalanceLabel.setText(customBalance);
     }
 
+    /**
+     * Sets the text fields to the current account's values and sets the limiters. Additionally, it initializes the
+     * textFields array for when fieldsAreFilled() is called later.
+     */
     private void setTextFields() {
         // Create TextField array for fieldsAreFilled() method
         textFields = new TextField[]{accountNameTextField, firstNameTextField, lastNameTextField};
@@ -66,10 +76,19 @@ public class AccountSettingsController {
         lastNameTextField.setTextFormatter(TextFieldUtils.createLengthLimitFormatter(50));
     }
 
+    /**
+     * Navigates the user back to the dashboard.
+     * @throws IOException If the scene switch fails when calling SceneManager.switchScene(String FXMLPath)
+     */
     public void goBack() throws IOException {
         SceneManager.switchScene("/fxml/dashboard.fxml");
     }
 
+    /**
+     * Grabs new account data from TextFields and updates the database, then taking the user back to the dashboard. If
+     * the TextFields are not filled, a red label is shown.
+     * @throws IOException If the scene switch fails when calling SceneManager.switchScene(String FXMLPath)
+     */
     public void updateAccount() throws IOException {
         // Check to make sure all fields are filled
         if (TextFieldUtils.fieldsAreFilled(textFields)) {
@@ -92,6 +111,11 @@ public class AccountSettingsController {
         }
     }
 
+    /**
+     * Displays an alert to the user when they want to delete their account and if confirmed, deletes the account from
+     * the database and takes the user back to the account selection screen.
+     * @throws IOException If the scene switch fails when calling SceneManager.switchScene(String FXMLPath)
+     */
     public void deleteAccount() throws IOException {
         // Create an alert for the user when they want to delete their account
         Alert accountDeletionAlert = new Alert(Alert.AlertType.WARNING, "Are you sure?", ButtonType.YES, ButtonType.NO);
@@ -128,6 +152,9 @@ public class AccountSettingsController {
         });
     }
 
+    /**
+     * Opens the GitHub page for the application in the default browser when the hyperlink is clicked.
+     */
     public void openGitHubPage() {
         String url = "https://github.com/dprieto12/horizon-finance";
 
