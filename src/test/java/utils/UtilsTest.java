@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Tests for TextFieldUtils and ApplicationState.
  *
  * TextFieldUtils.fieldsAreFilled() takes TextField objects, which are JavaFX controls. JavaFX controls
- * require the JavaFX toolkit to be initialised before they can be instantiated — even in tests that
+ * require the JavaFX toolkit to be initialized before they can be instantiated — even in tests that
  * never show a window. The @BeforeAll block handles this by starting the toolkit once per test class
  * via Platform.startup(), which is a no-op if it is already running.
  *

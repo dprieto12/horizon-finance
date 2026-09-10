@@ -31,11 +31,13 @@ public class DatabaseManager {
     private static DatabaseManager instance;
 
     /**
-     * Upon instantiation, sets the databaseUrl and constructs the database.
+     * Upon instantiation, sets the databaseUrl within AppData and constructs the database.
      */
     private DatabaseManager() {
-        String projectRoot = System.getProperty("user.dir");
-        databaseUrl = "jdbc:sqlite:" + projectRoot + "/horizon_database.db";
+        String appData = System.getenv("APPDATA");
+        String dbFolder = appData + "/HorizonFinance";
+        new java.io.File(dbFolder).mkdirs(); // creates the folder if it doesn't exist
+        databaseUrl = "jdbc:sqlite:" + dbFolder + "/horizon_database.db";
         buildDatabase();
     }
 
