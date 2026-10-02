@@ -295,7 +295,7 @@ public class AnalyticsDashboardController {
         LocalDate fromDate = fromDatePicker.getValue();
         LocalDate toDate = toDatePicker.getValue();
 
-        boolean invalidDate = fromDate == null || toDate == null || fromDate.isAfter(toDate) || toDate.isBefore(LocalDate.now());
+        boolean invalidDate = fromDate == null || toDate == null || fromDate.isAfter(toDate) || toDate.isAfter(LocalDate.now());
 
         if (invalidDate) {
             invalidDateLabel.setVisible(true);
