@@ -3,7 +3,7 @@
 Horizon Finance is a local app built for Windows that allows you to track and analyze your income and spending as simply as it needs to be!
 
 ## Installation
-Download the latest release [here](https://github.com/dprieto12/horizon-finance/releases/tag/v1.0.3),
+Download the latest release [here](https://github.com/dprieto12/horizon-finance/releases/tag/v1.0.4),
 extract the zip, and run **Horizon.exe**. No Java installation required.
 
 **Supported:** Windows 10/11
