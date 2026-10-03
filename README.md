@@ -12,7 +12,7 @@ extract the zip, and run **Horizon.exe**. No Java installation required.
 * **Role:** Head Developer
 * **Context:** Summer 2026 Freshman Capstone Project
 * **Languages, Tools, and Libraries:** Java, SQLite, JavaFX, CSS, Scene Builder, Git/GitHub, IntelliJ, Maven
-* **Status:** Complete / Production Build (v1.0.0)
+* **Status:** Complete / Production Build (v1.0.4)
 * **Support:** Built & Optimized for Windows 10/11
 
 ---
